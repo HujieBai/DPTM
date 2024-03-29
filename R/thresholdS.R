@@ -339,7 +339,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     }
   }
 
-  Zvalues <- round(Zvalues[length(xzx)],3)
+  Zvalues <- round(Zvalues[1:length(xzx)],3)
   jgs <- cbind(round(c(Coefs0,Coefs1,Coefs2),3),xzx,Zvalues)
   rownames(jgs) <-  coefs_names
   colnames(jgs) <- c("Coefs","Significance","t-value")
