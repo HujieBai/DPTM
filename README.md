@@ -8,3 +8,5 @@ Methods and tools for dynamic panel data analysis.
 Allows estimation and model selection of linear model and threshold model.
 Multiple threshold model and model with time fixed effects are also allowed.
 The maximum likelihood estimation we used are based on Hasio(2002) and Ramirez-Rondan (2020)
+
+The R package available for local installation is DPTM_x.x.x.tar.gz.
