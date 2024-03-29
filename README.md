@@ -1,13 +1,20 @@
 # DPTM
-This is an R package made by Hujie Bai.
 
-Title: Dynamic Panel Threshold Models with Fixed Effects Based on  Maximum Likelihood Estiamtion and MCMC
+Dynamic Panel Threshold Models with Fixed Effects Based on Maximum Likelihood Estimation and MCMC
 
-Description: 
-Methods and tools for dynamic panel data analysis. 
-Allows estimation and model selection of linear model and threshold model.
-Multiple threshold model and model with time fixed effects are also allowed.
-The maximum likelihood estimation we used is based on Hasio(2002) and Ramirez-Rondan (2020)
+Q1: Why you need to use it?
 
-Please devtools::install_github("HujieBai/DPTM") for installation.
-The R package available for local installation is DPTM_x.x.x.tar.gz.
+1.  The DPTM can supply the estimation and test for the dynamic panel threshold model with multiple thresholds while there are no software of this multiple thresholds model.
+2.  The DPTM is based on maximum likelihood (ML) estimation while most of dynamic panel threshold model used IVs or GMM, which brings a better performance and a more convenient in use.
+3.  The DPTM is based on MCMC while most of threshold model are based grid search, which brings a better performance by avoiding the selection of step size of grid.
+4.  The DPTM not only allows fixed effects, but also allows time trend term or time fixed effects, which is more suitable for reality and application.
+
+Q2: How can you use it?
+
+Please see the specific example in Help Pages of functions in the DPTM.
+
+Q3: How can you get it?
+
+1.  Use "devtools::install_github("HujieBai/DPTM")" for installation.
+
+2.  The R package available for local installation is "DPTM_x.x.x.tar.gz."
