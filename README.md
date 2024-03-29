@@ -1,7 +1,7 @@
 # DPTM
 This is an R package made by Hujie Bai.
 
-Title: Dynamic Panel Threshold Models with Fixed Effects Based on MCMC
+Title: Dynamic Panel Threshold Models with Fixed Effects Based on  Maximum Likelihood Estiamtion and MCMC
 
 Description: 
 Methods and tools for dynamic panel data analysis. 
