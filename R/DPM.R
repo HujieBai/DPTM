@@ -341,9 +341,10 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,assumption = 1,
 
   }
 
-  jgs <- cbind(coefs,xzx)
+  Zvalues <- round(Zvalues[length(coefs)],3)
+  jgs <- cbind(coefs,xzx,Zvalues)
   rownames(jgs) <-  coefs_names
-  colnames(jgs) <- c("Coefs","Significance")
+  colnames(jgs) <- c("Coefs","Significance","t-value")
 
   jgs <- jgs[1:fit_model$ccd,]
 

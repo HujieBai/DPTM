@@ -59,7 +59,8 @@
 #'m1$Coefs
 #'m1$MCMC_Convergence_Diagnostic
 #'plot(m1$MCMC)
-#'@describeIn DPTS This is a dynamic panel threshold model with fixed effects, which
+#'@description
+#'DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
 #'@returns A List of estimate results.
 #'@export
@@ -68,20 +69,20 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
                  ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,assumption = 1,
                  restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,delty0=NULL,
                  nCR = 3,autoburnin=TRUE,sro =0.1){
-  
+
   if(Th < 1){
     stop("\n","Th must be greater than 0 !","\n")
   }
-  
+
   ny= Th+1
-  
+
   time_shifts <- as.matrix(rep(1:tt,nn))
   time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2,3)]
   if(all(c(time_trend,time_fix_effects))){
     stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ","\n")
   }
-  
-  
+
+
   r0 <- stats::quantile(q, probs = 0.15)
   if(!is.null(r0x)){
     r0=r0x
@@ -90,17 +91,17 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   if(!is.null(r1x)){
     r1=r1x
   }
-  
+
   if(is.null(x1)){
     x1 = cbind(x,cvs)
   }
-  
+
   if(is.null(y1)){
     y1 = as.vector(matrix(rbind(rep(0,nn),matrix(y,tt,nn)[-tt,]),ncol = 1))
   }else{
     y1 = as.vector(y1)
   }
-  
+
   xx = NULL
   nx = 0
   if(!is.null(x)){
@@ -110,87 +111,87 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     }
     xx = matrix(xx,nrow = nrow(x))
   }
-  
+
   cvs0 = cvs
   if(isTRUE(time_trend)){
     cvs0 = cbind(cvs0,time_shifts)
   }
-  
+
   if(isTRUE(time_fix_effects)){
     cvs0 = cbind(cvs0,time_effects)
   }
-  
+
   nyy <- ifelse(isTRUE(NoY),1,ny)
-  
+
   mm0 <- MLE(y=y,x=cbind(y1,x),x1=x1,cvs=cvs0,ny=1,w=w,var_u = var_u,tt=tt,nn=nn,
              assumption = assumption,restart = restart,delty0=delty0)
   sse0x = mm0$ssemin
-  
+
   ybl <- length(y1)
-  
+
   yy_1 = matrix(y1,nrow = length(y1),ncol = Th)
-  
+
   msx = function(ga){
-    
+
     if(all(ga == sort(ga))){
-      
+
       rts <- matrix(q,nrow = nn*tt,ncol = (Th)) - matrix(ga,nrow  = nn*tt,ncol = Th,byrow = TRUE)
       rts[which(rts>0,arr.ind = TRUE)] <- 1
       rts[which(rts<=0,arr.ind = TRUE)] <- 0
       rts0 <- cbind(rep(1,nn*tt),rts)
-      
+
       if(any(colSums(rts)<sro*ybl)){
         sse0 = sse0x
       }else{
-        
-        
+
+
         for (i in 1:(ncol(rts0)-1)) {
           rts0[,i] <- rts0[,i] - rts0[,i+1]
         }
-        
+
         xxx <- NULL
         rts0x <- NULL
         if(!is.null(x)){
-          
+
           for (i in 1:nx) {
             rts0x <- cbind(rts0x,rts0)
           }
           xxx = xx*rts0x
         }
-        
+
         if(isFALSE(NoY)){
           xxx = cbind(y1,yy_1*rts,xxx)
         }else{
           xxx = cbind(y1,xxx)
         }
-        
+
         if(qr(xxx)$rank != ncol(xxx)){
           sse0 = sse0x
         }else{
-          
+
           mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
                         assumption = assumption,restart = restart,delty0=delty0),silent = TRUE)
-          
+
           if("try-error" %in% class(mx)){
             sse0 = sse0x
           }else{
             sse0 = mx$ssemin
           }
-          
+
         }
       }
     }else{
       sse0 = sse0x
     }
-    
+
     return(sse0)
   }
-  
+
   pf1 = function(ga){
     s1 = msx(ga)
     return(-s1)
   }
-  
+
   priors <- BayesianTools::createUniformPrior(lower = c(rep(r0,Th)), upper = c(rep(r1,Th)))
   bayesianSetup <- BayesianTools::createBayesianSetup(pf1, prior = priors)
   if(types == "Metropolis"){
@@ -198,68 +199,68 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   }else{
     settings = list(iterations = (ms+burnin),burnin=burnin, nCR = nCR)
   }
-  
-  
+
+
   out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup,
                                 sampler = types,
                                 settings = settings)
-  
+
   samples = BayesianTools::getSample(out,parametersOnly = F)
   mres = MAP2(out)
   gamma0 = mres[[1]]
-  
+
   ssemin = -mres[[2]][2]
-  
+
   rts <- matrix(q,nrow = nn*tt,ncol = Th) - matrix(gamma0,nrow  = nn*tt,ncol = Th,byrow = TRUE)
   rts[which(rts>0,arr.ind = TRUE)] <- 1
   rts[which(rts<=0,arr.ind = TRUE)] <- 0
   rts0 <- cbind(rep(1,nn*tt),rts)
-  
+
   for (i in 1:(ncol(rts0)-1)) {
     rts0[,i] <- rts0[,i] - rts0[,i+1]
   }
-  
+
   xxx <- NULL
   rts0x <- NULL
   if(!is.null(x)){
-    
+
     for (i in 1:nx) {
       rts0x <- cbind(rts0x,rts0)
     }
     xxx = xx*rts0x
   }
-  
+
   if(isFALSE(NoY)){
     xxx = cbind(cbind(y1,yy_1)*rts0,xxx)
   }else{
     xxx = cbind(y1,xxx)
   }
-  
+
   if(qr(xxx)$rank != ncol(xxx)){
     stop("\n","The independent variable matrix with threshold effects is singular!","\n",
          "Please check x and other inputs!")
   }
-  
+
   mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
                 assumption = assumption,restart = restart,delty0=delty0,stages = 2),silent = TRUE)
-  
+
   if("try-error" %in% class(mx)){
     stop("There is an Error after given thresholds, please check any inputs!")
   }
-  
+
   IC = matrix(0,3,Th*2)
-  
+
   colnames(IC) <- rep(c("Lower","Upper"),Th)
   rownames(IC) <- c("90%","95%","99%")
-  
+
   for (i in 1:Th) {
     IC[1,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.05),stats::quantile(samples[,i],0.95))
     IC[2,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.025),stats::quantile(samples[,i],0.975))
     IC[3,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.005),stats::quantile(samples[,i],0.995))
   }
-  
+
   chains <- out$chain
-  
+
   for (i in 1:length(chains)) {
     chains[[i]] <- chains[[i]][,1:Th]
   }
@@ -267,32 +268,32 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   if("try-error" %in% class(MCMC_Convergence_Diagnostic)){
     MCMC_Convergence_Diagnostic <- coda::gelman.diag(chains, autoburnin= FALSE)
   }
-  
+
   betas <- mx$coefs[1:mx$ccd]
-  
-  
+
+
   nxx <- ifelse(is.null(x),0,ncol(x)*ncol(rts0))
   ncc <- ifelse(is.null(cvs),0,ncol(cvs))
-  
+
   Coefs0 <-  betas[1:nyy]
   Coefs1 <- as.vector(t( matrix(betas[(nyy+1):(nyy+nxx)],ncol(x),byrow = TRUE)))
   Coefs2 <-  NULL
   if(!is.null(cvs)){
     Coefs2 <-  betas[(nyy+nxx+1):(nyy+nxx+ncc)]
   }
-  
-  
-  
-  
+
+
+
+
   Zvalues <- mx$Zvalues[1:(nyy+nxx+ncc)]
   alpha_values <- round(abs(stats::qt(c(0.05,0.025,0.005),1e7)),3)
-  
+
   coefs_names <- c()
   xzx <- c()
-  
-  
+
+
   for (i in 1:length(Zvalues)) {
-    
+
     if(abs(Zvalues[i])>= alpha_values[3]){
       xzx[i] <- "***"
     }else{
@@ -304,45 +305,45 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
         }else{
           xzx[i] <- "**"
         }
-        
+
       }
-      
+
     }
-    
-    
+
+
   }
-  
+
   if(isTRUE(NoY)){
     coefs_names <- c(coefs_names,paste("y", 1, sep = ""))
   }else{
-    
+
     for (i in 1:nyy) {
       coefs_names <- c(coefs_names,paste("y_regime_", i, sep = ""))
     }
-    
+
   }
-  
+
   if(!is.null(x)){
     for (i in 1:ncol(x)) {
-      
+
       for (j in 1:ny) {
         coefs_names <- c(coefs_names,paste("x",i,"_regime_", j, sep = ""))
       }
-      
+
     }
   }
-  
+
   if(!is.null(cvs)){
     for (i in 1:ncol(cvs)) {
       coefs_names <- c(coefs_names,paste("Control_", i, sep = ""))
     }
   }
-  
-  
-  jgs <- cbind(round(c(Coefs0,Coefs1,Coefs2),3),xzx)
+
+  Zvalues <- round(Zvalues[length(xzx)],3)
+  jgs <- cbind(round(c(Coefs0,Coefs1,Coefs2),3),xzx,Zvalues)
   rownames(jgs) <-  coefs_names
-  colnames(jgs) <- c("Coefs","Significance")
-  
+  colnames(jgs) <- c("Coefs","Significance","t-value")
+
   cat("\n","This is a Dynamic panel threshold modedl with fixed effects.","\n",
       "It follows Assumption ",assumption,", and Only_b =",Only_b,"!\n")
   cat("\n","---------------------------------------------------","\n")
@@ -365,12 +366,12 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   cat("\n","If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
   cat("\n","If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
   cat("\n","---------------------------------------------------","\n")
-  
-  
-  
-  
+
+
+
+
   mx$Coefs <- jgs
-  
+
   return(list(Ths = gamma0, Ths_IC = IC, Coefs = jgs,ssemin = ssemin,
               MCMC_Convergence_Diagnostic = MCMC_Convergence_Diagnostic,model = mx,MCMC = out))
 }

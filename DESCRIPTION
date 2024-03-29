@@ -1,7 +1,7 @@
 Package: DPTM
 Type: Package
 Title: Dynamic Panel Threshold Models with Fixed Effects Based on  Maximum Likelihood Estiamtion and MCMC
-Version: 1.1.6
+Version: 1.1.7
 Date: 2024-03-28
 Author: Hujie Bai
 Maintainer: Hujie Bai <hujiebai@163.com>

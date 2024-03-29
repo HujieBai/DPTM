@@ -32,7 +32,6 @@
 #'only works when assumption is 2.
 #'@param var_u the option of variance of error term; By default is NULL; It must be
 #'greater than 0; When meet relevant ERROR, please change the var_u.
-#'@param delty0 the option of delta_y; By default delty0 is NULL; Pleas do not change delty0.
 #'@param nCR parameter determining the number of cross-over proposals of DREAM MCMC. If nCR = 1
 #'all parameters are updated jointly.
 #'@param autoburnin a logical flag indicating of the Gelman and Rubin's convergence diagnostic,
@@ -43,6 +42,10 @@
 #'@param bt the number of bootstrap.
 #'@param parallel the option of parallel; By default parallel is FALSE, when parallel is TRUE, this test will run in parallel.
 #'@param seeds the random seed.
+#'@references Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
+#' of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.
+#'@references Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
+#' Maximum likelihood estimation of fixed effects dynamic panel data models covering short time periods. Journal of econometrics, 109(1), 107-150.
 #'@author Hujie Bai
 #'@examples
 #'data("data", package = "DPTM")
@@ -55,7 +58,8 @@
 #'m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
 #'assumption = 1,bt=10,parallel=FALSE)
 #'m1$ps
-#'@describeIn DPTS This is a dynamic panel threshold model with fixed effects, which
+#'@description
+#'DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
 #'@export
 Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=FALSE
