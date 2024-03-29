@@ -1,13 +1,17 @@
 Package: DPTM
 Type: Package
 Title: Dynamic Panel Threshold Models with Fixed Effects Based on MCMC
-Version: 1.1.1
+Version: 1.1.4
 Date: 2024-03-28
 Author: Hujie Bai
 Maintainer: Hujie Bai <hujiebai@163.com>
 Description: Methods and tools for dynamic panel data analysis. Allows estimation and model selection of linear model and threshold model.Multiple threshold model and model with time fixed effects are also allowed.
 License: GPL (>= 3)
+URL: https://github.com/HujieBai/DPTM
 Encoding: UTF-8
 Imports: Rcpp (>= 1.0.12), RcppEigen, BayesianTools,Matrix,foreach, purrr, MASS,stats,snow, doSNOW,utils,parallel,coda
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.3.1
+Depends: 
+    R (>= 4.3.0)
+LazyData: true

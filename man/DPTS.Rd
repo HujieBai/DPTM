@@ -115,7 +115,7 @@ More details see Hsiao (2002).}
 \item{restart}{the option of iterations; By default restart is FALSE,
 if encounters iteration failure, please set restart as TRUE.}
 
-\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.;
+\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
 More details please see Hsiao (2002) and Ramirez-Rondan (2020).}
 
 \item{w}{the variance ratio; By default is NULL; It must be greater than 1, and
@@ -161,6 +161,31 @@ allows multiple thresholds, time trend term or time fixed effects.
 allows multiple thresholds, time trend term or time fixed effects.
 
 }}
+\examples{
+data("data", package = "DPTM")
+y <- data$data_test$y
+q <-data$data_test$q
+x <- as.matrix(data$data_test$x)
+z <- as.matrix(data$data_test$z)
+tt <- data$data_test$tt
+nn <- data$data_test$nn
+m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,assumption = 1)
+m1$Ths
+m1$Ths_IC
+m1$Coefs
+m1$MCMC_Convergence_Diagnostic
+plot(m1$MCMC)
+data("data", package = "DPTM")
+y <- data$data_test$y
+q <- data$data_test$q
+x <- as.matrix(data$data_test$x)
+z <- as.matrix(data$data_test$z)
+tt <- data$data_test$tt
+nn <- data$data_test$nn
+m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
+assumption = 1,bt=10,parallel=FALSE)
+m1$ps
+}
 \references{
 Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
 of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.

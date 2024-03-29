@@ -54,7 +54,7 @@ By default x1 is NULL, and thus x1 will be computed by x automatically.}
 
 \item{delty0}{the option of delta_y; By default delty0 is NULL; Pleas do not change delty0.}
 
-\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.;
+\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
 More details please see Hsiao (2002) and Ramirez-Rondan (2020).}
 }
 \value{
@@ -69,6 +69,18 @@ The dynamic panel linear model with fixed effects
 allows time trend term or time fixed effects.
 
 }}
+\examples{
+data("data", package = "DPTM")
+y <- data$data_test_linear$y
+q <- data$data_test_linear$q
+x <- as.matrix(data$data_test_linear$x)
+z <- as.matrix(data$data_test_linear$z)
+tt <- data$data_test_linear$tt
+nn <- data$data_test_linear$nn
+xx <- cbind(x,z)
+m1 <- DPML(y=y,x=xx,tt=tt,nn=nn,assumption = 1)
+m1$Coefs
+}
 \references{
 Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
 of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.

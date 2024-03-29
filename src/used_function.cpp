@@ -1,7 +1,5 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
-#include <RcppEigenForward.h>
-#include <RcppEigenWrap.h>
 //[[Rcpp::depends(RcppEigen)]]
 using namespace Eigen;
 using namespace std;

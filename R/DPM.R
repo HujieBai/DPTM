@@ -1,5 +1,4 @@
 
-
 MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,tt,nn,assumption = 1,
                 restart = FALSE,stages = 1){
 
@@ -40,8 +39,8 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
   yint = matrix(matrix(delty0,nrow = (tt-1))[1,],ncol = 1)
 
   if(qr(x1int)$rank != ncol(x1int)){
-    stop('\n','The inital deltaX1 Matrix is singular!','\n',
-         "Please change the parameter x1!",'\n')
+    stop("\n","The inital deltaX1 Matrix is singular!","\n",
+         "Please change the parameter x1!","\n")
   }
   delts <- qr.solve(x1int,as.vector(yint))
 
@@ -63,8 +62,8 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
 
   leftiv <- t(dy2)%*%dy1
   if(qr(leftiv)$rank != ncol(leftiv)){
-    stop('\n','The IV Matrix (t(Y_2)Y_1) is singular!','\n',
-         "Please check the input y and x!",'\n')
+    stop("\n","The IV Matrix (t(Y_2)Y_1) is singular!","\n",
+         "Please check the input y and x!","\n")
   }
 
   betas_iv <- c(as.vector(inverse_cpp(leftiv)%*%(t(dy2)%*%dy0_iv)),delts)
@@ -101,7 +100,7 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
                                     omega=omega,cd=cd,tt=tt,nn=nn,iterlim = 500)
                          ,silent = TRUE))
 
-    if('try-error' %in% class(result_in)){
+    if("try-error" %in% class(result_in)){
       if(isTRUE(restart)){
         pars[1:ny] = runif(ny,-1/ny,1/ny)
         pars[cd-1] = runif(1,2,5)
@@ -111,8 +110,8 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
                                                     omega=omega,cd=cd,tt=tt,nn=nn,iterlim = 500)
                                          ,silent = TRUE))
       }else{
-        stop('\n','Encounter iteration failure!','\n',
-             'Please set restart = True or check other inputs!','\n')
+        stop("\n","Encounter iteration failure!","\n",
+             "Please set restart = True or check other inputs!","\n")
       }
     }
 
@@ -129,7 +128,7 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
                                                 ny=ny,varv1=varv1,iterlim = 500)
                                      ,silent = TRUE))
 
-    if('try-error' %in% class(result_in)){
+    if("try-error" %in% class(result_in)){
       if(isTRUE(restart)){
         pars[1:ny] = runif(ny,-1/ny,1/ny)
         pars[cd] = varv1/2
@@ -138,8 +137,8 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
                                                     ny=ny,varv1=varv1,iterlim = 500)
                                          ,silent = TRUE))
       }else{
-        stop('\n','Encounter iteration failure!','\n',
-             'Please set restart = True or check other inputs!','\n')
+        stop("\n","Encounter iteration failure!","\n",
+             "Please set restart = True or check other inputs!","\n")
       }
     }
 
@@ -170,7 +169,7 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
   }
   cms = try(MASS::ginv(cms),silent = TRUE)
 
-  if('try-error' %in% class(cms)){
+  if("try-error" %in% class(cms)){
     ses = "singular, and please check inputs"
     zvalues = "singular, and please check inputs"
     cms = "singular, and please check inputs"
@@ -238,6 +237,17 @@ MAP2 <- function (bayesianOutput, ...)
 #'@references Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
 #' Maximum likelihood estimation of fixed effects dynamic panel data models covering short time periods. Journal of econometrics, 109(1), 107-150.
 #'@author Hujie Bai
+#'@examples
+#'data("data", package = "DPTM")
+#'y <- data$data_test_linear$y
+#'q <- data$data_test_linear$q
+#'x <- as.matrix(data$data_test_linear$x)
+#'z <- as.matrix(data$data_test_linear$z)
+#'tt <- data$data_test_linear$tt
+#'nn <- data$data_test_linear$nn
+#'xx <- cbind(x,z)
+#'m1 <- DPML(y=y,x=xx,tt=tt,nn=nn,assumption = 1)
+#'m1$Coefs
 #'@describeIn DPML This is a dynamic panel linear model with fixed effects, which
 #'allows time trend term or time fixed effects.
 #'@returns A List of estimate results.
@@ -263,7 +273,7 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,assumption = 1,
   time_shifts <- as.matrix(rep(1:tt,nn))
   time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2,3)]
   if(all(c(time_trend,time_fix_effects))){
-    stop('\n','time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ','\n')
+    stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted! ","\n")
   }
 
 
@@ -309,7 +319,7 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,assumption = 1,
       xzx[i] <- "***"
     }else{
       if(abs(Zvalues[i])< alpha_values[1]){
-        xzx[i] <- ''
+        xzx[i] <- ""
       }else{
         if(abs(Zvalues[i])<= alpha_values[2]){
           xzx[i] <- "*"
@@ -336,16 +346,16 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,assumption = 1,
 
   jgs <- jgs[1:fit_model$ccd,]
 
-  cat('\n',"This is a Dynamic panel modedl with fixed effects.",'\n',
-          'It follows Assumption ',assumption,', and Only_b =',Only_b,'!\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"Time Fixed Effects: ",time_fix_effects,' !\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"Time Shifts: ",time_trend,' !\n')
-  cat('\n',"---------------------------------------------------",'\n')
+  cat("\n","This is a Dynamic panel modedl with fixed effects.","\n",
+          "It follows Assumption ",assumption,", and Only_b =",Only_b,"!\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","Time Shifts: ",time_trend," !\n")
+  cat("\n","---------------------------------------------------","\n")
 
 
-  cat('\n',"The coefs are: ",'\n')
+  cat("\n","The coefs are: ","\n")
   print(jgs)
 
 
@@ -403,6 +413,20 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,assumption = 1,
 #'@references Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
 #' Maximum likelihood estimation of fixed effects dynamic panel data models covering short time periods. Journal of econometrics, 109(1), 107-150.
 #'@author Hujie Bai
+#'@examples
+#'data("data", package = "DPTM")
+#'y <- data$data_test$y
+#'q <-data$data_test$q
+#'x <- as.matrix(data$data_test$x)
+#'z <- as.matrix(data$data_test$z)
+#'tt <- data$data_test$tt
+#'nn <- data$data_test$nn
+#'m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,assumption = 1)
+#'m1$Ths
+#'m1$Ths_IC
+#'m1$Coefs
+#'m1$MCMC_Convergence_Diagnostic
+#'plot(m1$MCMC)
 #'@describeIn DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
 #'@returns A List of estimate results.
@@ -414,7 +438,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
                  nCR = 3,autoburnin=TRUE,sro =0.1){
 
   if(Th < 1){
-    stop('\n',"Th must be greater than 0 !",'\n')
+    stop("\n","Th must be greater than 0 !","\n")
   }
 
   ny= Th+1
@@ -422,7 +446,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   time_shifts <- as.matrix(rep(1:tt,nn))
   time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2,3)]
   if(all(c(time_trend,time_fix_effects))){
-    stop('\n','time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ','\n')
+    stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ","\n")
   }
 
 
@@ -515,7 +539,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
           mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
                      assumption = assumption,restart = restart,delty0=delty0),silent = TRUE)
 
-          if('try-error' %in% class(mx)){
+          if("try-error" %in% class(mx)){
             sse0 = sse0x
           }else{
             sse0 = mx$ssemin
@@ -580,15 +604,15 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   }
 
   if(qr(xxx)$rank != ncol(xxx)){
-    stop('\n','The independent variable matrix with threshold effects is singular!','\n',
+    stop("\n","The independent variable matrix with threshold effects is singular!","\n",
          "Please check x and other inputs!")
   }
 
   mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
                 assumption = assumption,restart = restart,delty0=delty0,stages = 2),silent = TRUE)
 
-  if('try-error' %in% class(mx)){
-    stop('There is an Error after given thresholds, please check any inputs!')
+  if("try-error" %in% class(mx)){
+    stop("There is an Error after given thresholds, please check any inputs!")
   }
 
   IC = matrix(0,3,Th*2)
@@ -641,7 +665,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
       xzx[i] <- "***"
     }else{
       if(abs(Zvalues[i])< alpha_values[1]){
-        xzx[i] <- ''
+        xzx[i] <- ""
       }else{
         if(abs(Zvalues[i])<= alpha_values[2]){
           xzx[i] <- "*"
@@ -687,28 +711,28 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   rownames(jgs) <-  coefs_names
   colnames(jgs) <- c("Coefs","Significance")
 
-  cat('\n',"This is a Dynamic panel threshold modedl with fixed effects.",'\n',
-          'It follows Assumption ',assumption,', and Only_b =',Only_b,'!\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"Time Fixed Effects: ",time_fix_effects,' !\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"Time Shifts: ",time_trend,' !\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"The number of threshold is ",Th,' !\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"The estiamtes of thresholds: ", '\n')
+  cat("\n","This is a Dynamic panel threshold modedl with fixed effects.","\n",
+          "It follows Assumption ",assumption,", and Only_b =",Only_b,"!\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","Time Shifts: ",time_trend," !\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","The number of threshold is ",Th," !\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","The estiamtes of thresholds: ", "\n")
   print(round(gamma0,3))
-  cat('\n',"Their confidence intervals are : ",' !\n')
+  cat("\n","Their confidence intervals are : "," !\n")
   print(round(IC,3))
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"The coefs are: ",'\n')
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","The coefs are: ","\n")
   print(jgs)
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n'," The Gelman and Rubin’s Convergence Diagnostic is ",'\n')
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n"," The Gelman and Rubin Convergence Diagnostic is ","\n")
   print(MCMC_Convergence_Diagnostic)
-  cat('\n',"If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !",'\n')
-  cat('\n',"If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !",'\n')
-  cat('\n',"---------------------------------------------------",'\n')
+  cat("\n","If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
+  cat("\n","If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
+  cat("\n","---------------------------------------------------","\n")
 
 
 
@@ -770,6 +794,17 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
 #'@references Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
 #' Maximum likelihood estimation of fixed effects dynamic panel data models covering short time periods. Journal of econometrics, 109(1), 107-150.
 #'@author Hujie Bai
+#'@examples
+#'data("data", package = "DPTM")
+#'y <- data$data_test$y
+#'q <- data$data_test$q
+#'x <- as.matrix(data$data_test$x)
+#'z <- as.matrix(data$data_test$z)
+#'tt <- data$data_test$tt
+#'nn <- data$data_test$nn
+#'m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
+#'assumption = 1,bt=10,parallel=FALSE)
+#'m1$ps
 #'@describeIn DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
 #'@returns A List of estimate results.
@@ -779,13 +814,13 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
                            ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,assumption = 1,
                            restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,
                            nCR = 3,autoburnin=TRUE,bt=100,parallel=FALSE,seeds = 2024,sro =0.1){
-  cat('\n',"Test for the number of Thresholds",'\n')
-  cat('\n',"It is noted that when under H0 the number of Thresholds is 1, this test is the so called threshold existence test.",'\n')
-  cat('\n',"---------------------------------------------------",'\n')
-  cat('\n',"H0: There are ",Th," thresholds",'\n')
+  cat("\n","Test for the number of Thresholds","\n")
+  cat("\n","It is noted that when under H0 the number of Thresholds is 1, this test is the so called threshold existence test.","\n")
+  cat("\n","---------------------------------------------------","\n")
+  cat("\n","H0: There are ",Th," thresholds","\n")
 
-  cat('\n',"H1: There are ",Th+1," thresholds",'\n')
-  cat('\n',"---------------------------------------------------",'\n')
+  cat("\n","H1: There are ",Th+1," thresholds","\n")
+  cat("\n","---------------------------------------------------","\n")
 
   if(Th == 0){
     set.seed(seeds)
@@ -820,8 +855,8 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
   m1s <- as.vector(m1$ssemin)
 
-  cat('\n',"Bootstrap:",'\n')
-  cat('\n',"Parallel: ",parallel,'\n')
+  cat("\n","Bootstrap:","\n")
+  cat("\n","Parallel: ",parallel,"\n")
 
   LRs = (m0s - m1s)/(m1s/((tt-2)*nn))
 
@@ -858,7 +893,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
                restart = restart,Only_b = Only_b,w=w,var_u = var_u,
                nCR = nCR,autoburnin=autoburnin,delty0=dyb,sro = sro)))
     jj = j
-    while('try-error' %in% class(m0b) | 'try-error' %in% class(m1b)){
+    while("try-error" %in% class(m0b) | "try-error" %in% class(m1b)){
       jj = jj + 1000
       set.seed(jj)
       cy = sample(1:nn,nn,replace = TRUE)
@@ -903,9 +938,9 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     if(LRsb>=LRs){
       pbt = "exceeded"
     }
-    cat('\n')
+    cat("\n")
     cat(j,"/",bt,pbt)
-    cat('\n')
+    cat("\n")
     return(LRsb)
   }
 
@@ -921,7 +956,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     cl <- snow::makeSOCKcluster(xc)
     doSNOW::registerDoSNOW(cl)
 
-    FS <- foreach::foreach(i=1:Btimes, .packages = c('purrr','SparseM','Rcpp',"BayesianTools"), .options.snow=opts,
+    FS <- foreach::foreach(i=1:Btimes, .packages = c("purrr","SparseM","Rcpp","BayesianTools"), .options.snow=opts,
                            .combine=c,.errorhandling = "remove") %dopar%{
                              bt_p = btprocedure(i)
                              return(bt_p)
