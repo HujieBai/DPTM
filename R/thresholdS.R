@@ -53,7 +53,7 @@
 #'z <- as.matrix(data$data_test$z)
 #'tt <- data$data_test$tt
 #'nn <- data$data_test$nn
-#'m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,assumption = 1)
+#'m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,assumption = 1,ms = 100,burnin = 100)
 #'m1$Ths
 #'m1$Ths_IC
 #'m1$Coefs

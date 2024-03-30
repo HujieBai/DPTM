@@ -55,9 +55,14 @@
 #'z <- as.matrix(data$data_test$z)
 #'tt <- data$data_test$tt
 #'nn <- data$data_test$nn
+#'\dontrun{
+#'### Examples elapsed time > 5s
 #'m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
-#'assumption = 1,bt=10,parallel=FALSE)
+#'assumption = 1,bt=100,parallel=TRUE)
 #'m1$ps
+#'}
+#'
+#'
 #'@description
 #'DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
@@ -66,7 +71,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
                            ,x1=NULL,tt,nn,Th=0,ms = 1000,burnin=1000,types = "DREAMzs",
                            ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,assumption = 1,
                            restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,
-                           nCR = 3,autoburnin=TRUE,bt=100,parallel=FALSE,seeds = 2024,sro =0.1){
+                           nCR = 3,autoburnin=TRUE,bt=100,parallel=TRUE,seeds = 2024,sro =0.1){
   cat("\n","Test for the number of Thresholds","\n")
   cat("\n","It is noted that when under H0 the number of Thresholds is 1, this test is the so called threshold existence test.","\n")
   cat("\n","---------------------------------------------------","\n")
@@ -124,14 +129,14 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
     if(Th == 0){
       set.seed(j)
-      ins <- capture.output(m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,assumption = assumption,
+      ins <- utils::capture.output(m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,assumption = assumption,
                                             time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                             x1=x1,Only_b = Only_b,delty0=dyb)))
 
 
     }else{
       set.seed(j)
-      ins <- capture.output(m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
+      ins <- utils::capture.output(m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,assumption = assumption,
                                             restart = restart,Only_b = Only_b,w=w,var_u = var_u,
@@ -140,7 +145,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
     }
     set.seed(j)
-    ins <- capture.output(m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
+    ins <- utils::capture.output(m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                           ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                           ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,assumption = assumption,
                                           restart = restart,Only_b = Only_b,w=w,var_u = var_u,
@@ -155,14 +160,14 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
       if(Th == 0){
         set.seed(jj)
-        ins <- capture.output(m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,assumption = assumption,
+        ins <- utils::capture.output(m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,assumption = assumption,
                                               time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                               x1=x1,Only_b = Only_b,delty0=dyb)))
 
 
       }else{
         set.seed(jj)
-        ins <- capture.output( m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
+        ins <- utils::capture.output( m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                                ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                                ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,assumption = assumption,
                                                restart = restart,Only_b = Only_b,w=w,var_u = var_u,
@@ -171,7 +176,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
       }
       set.seed(jj)
-      ins <- capture.output(m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
+      ins <- utils::capture.output(m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,assumption = assumption,
                                             restart = restart,Only_b = Only_b,w=w,var_u = var_u,
@@ -200,23 +205,21 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
   if(!isTRUE(parallel)){
     FS = as.numeric(na.omit(purrr::map_dbl(1:bt,btprocedure)))
   }else{
-    xc= parallel::detectCores()
-    xc = xc -1
+
     Btimes <- bt
-    pb <- utils::txtProgressBar(min=1, max=Btimes, style=3)
-    progress <- function(n) utils::setTxtProgressBar(pb, n)
-    opts <- list(progress=progress)
-    cl <- snow::makeSOCKcluster(xc)
-    doSNOW::registerDoSNOW(cl)
 
-    FS <- foreach::foreach(i=1:Btimes, .packages = c("purrr","SparseM","Rcpp","BayesianTools"), .options.snow=opts,
-                           .combine=c,.errorhandling = "remove") %dopar%{
-                             bt_p = btprocedure(i)
-                             return(bt_p)
-                           }
-
-    close(pb)
-    snow::stopCluster(cl)
+    set_option("progress_track", TRUE)
+    
+    backend <- start_backend(cores = 4, cluster_type = "psock", backend_type = "async")
+    
+    configure_bar(type = "basic", style = 3)
+    
+    FS <- parabar::par_sapply(backend, 1:Btimes, function(j) {
+      bt_p = btprocedure(j)
+      return(bt_p)
+    })
+    
+    stop_backend(backend)
   }
 
 

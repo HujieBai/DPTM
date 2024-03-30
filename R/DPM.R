@@ -253,16 +253,10 @@ MAP2 <- function (bayesianOutput, ...)
 #'@returns A List of estimate results.
 #'@useDynLib DPTM
 #'@import Rcpp
-#'@import RcppEigen
 #'@import BayesianTools
 #'@import stats
-#'@import foreach
+#'@import parabar
 #'@importFrom purrr map_dbl
-#'@importFrom snow makeSOCKcluster
-#'@importFrom snow stopCluster
-#'@importFrom doSNOW registerDoSNOW
-#'@importFrom utils txtProgressBar
-#'@importFrom utils setTxtProgressBar
 #'@importFrom utils capture.output
 #'@importFrom MASS ginv
 #'@importFrom coda gelman.diag

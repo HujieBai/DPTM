@@ -31,7 +31,7 @@ Threshold_Test(
   nCR = 3,
   autoburnin = TRUE,
   bt = 100,
-  parallel = FALSE,
+  parallel = TRUE,
   seeds = 2024,
   sro = 0.1
 )
@@ -121,9 +121,14 @@ x <- as.matrix(data$data_test$x)
 z <- as.matrix(data$data_test$z)
 tt <- data$data_test$tt
 nn <- data$data_test$nn
+\dontrun{
+### Examples elapsed time > 5s
 m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
-assumption = 1,bt=10,parallel=FALSE)
+assumption = 1,bt=100,parallel=TRUE)
 m1$ps
+}
+
+
 }
 \references{
 Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
