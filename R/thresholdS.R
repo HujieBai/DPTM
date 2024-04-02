@@ -1,14 +1,14 @@
 #'@title The Dynamic panel threshold model with multiple thresholds
 #'@param y the dependent variable; vector type input.
 #'@param x the independent variable; matrix type input.
-#'@param y1 the lag dependent variable; vector type input; By default y1 is NULL,
+#'@param y1 the lag dependent variable; vector type input; By default, y1 is NULL,
 #'and then y1 will be computed by y automatically.
 #'@param q the threshold variable; vector type input.
-#'@param cvs the set of control variables; matrix type input;By default cvs is NULL.
-#'@param time_trend the time trend; By default it is FALSE.
-#'@param time_fix_effects the time fixed effects; By default it is FALSE.
+#'@param cvs the set of control variables; matrix type input;By default, cvs is NULL.
+#'@param time_trend the time trend; By default, it is FALSE.
+#'@param time_fix_effects the time fixed effects; By default, it is FALSE.
 #'@param x1 the initial values of independent variable; matrix type input.
-#'By default x1 is NULL, and thus x1 will be computed by x automatically.
+#'By default, x1 is NULL, and thus x1 will be computed by x automatically.
 #'@param tt the length of time period.
 #'@param nn the number of individuals.
 #'@param Th the number of thresholds.
@@ -16,23 +16,20 @@
 #'@param burnin the length of burn-in.
 #'@param types the type of MCMC used; More details see BayesianTools::runMCMC.
 #'@param ADs the options for MCMC; More details see BayesianTools::runMCMC.
-#'@param r0x the lower bound of thresholds; By default r0x is NULL,
+#'@param r0x the lower bound of thresholds; By default, r0x is NULL,
 #'and thus r0x will be computed by q automatically.
-#'@param r1x the upper bound of thresholds; By default r0x is NULL,
+#'@param r1x the upper bound of thresholds; By default, r0x is NULL,
 #'and thus r1x will be computed by q automatically.
 #'@param NoY the option of threshold effects on the lag dependent variable;
-#'By default NoY is False, and thus there will be threshold effects on y1.
-#'@param assumption the option of assumption; By default assumption is 1, and it can be 2;
-#'More details see Hsiao (2002).
-#'@param restart the option of iterations; By default restart is FALSE,
+#'By default, NoY is False, and thus there will be threshold effects on y1.
+#'@param restart the option of iterations; By default, restart is FALSE,
 #'if encounters iteration failure, please set restart as TRUE.
-#'@param Only_b the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.;
-#'More details please see Hsiao (2002) and Ramirez-Rondan (2020).
-#'@param w the variance ratio; By default is NULL; It must be greater than 1, and
-#'only works when assumption is 2.
-#'@param var_u the option of variance of error term; By default is NULL; It must be
+#'@param Only_b the option of initial equation;By default, Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.;
+#'Please see Hsiao (2002) and Ramírez-Rondán (2020) for more details.
+#'@param w the variance ratio; By default, is NULL; It must be greater than 1.
+#'@param var_u the option of variance of error term; By default, is NULL; It must be
 #'greater than 0; When meet relevant ERROR, please change the var_u.
-#'@param delty0 the option of delta_y; By default delty0 is NULL; Pleas do not change delty0.
+#'@param delty0 the option of delta_y; By default, delty0 is NULL; Please do not change delty0.
 #'@param nCR parameter determining the number of cross-over proposals of DREAM MCMC. If nCR = 1
 #'all parameters are updated jointly.
 #'@param autoburnin a logical flag indicating of the Gelman and Rubin's convergence diagnostic,
@@ -40,7 +37,8 @@
 #'distribution.  If set to TRUE, a log transform or logit transform, as appropriate,
 #'will be applied.
 #'@param sro the least ratio of sample in regimes.
-#'@references Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
+#'@param display the option of whether to print the messages of estimated results; By default, the display is TRUE.
+#'@references Ramírez-Rondán, N. R. (2020). Maximum likelihood estimation
 #' of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.
 #'@references Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
 #' Maximum likelihood estimation of fixed effects dynamic panel data models covering short time periods. Journal of econometrics, 109(1), 107-150.
@@ -53,7 +51,7 @@
 #'z <- as.matrix(data$data_test$z)
 #'tt <- data$data_test$tt
 #'nn <- data$data_test$nn
-#'m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,assumption = 1,ms = 100,burnin = 100)
+#'m1 <- DPTS(y=y,q=q,x=x,cvs = z,tt=tt,nn=nn,Th=1,ms = 100,burnin = 100)
 #'m1$Ths
 #'m1$Ths_IC
 #'m1$Coefs
@@ -62,13 +60,22 @@
 #'@description
 #'DPTS This is a dynamic panel threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
-#'@returns A List of estimate results.
+#'@returns A list containing the following components:
+#'\item{ssemin}{  the negaive log-likelihood function value}
+#'\item{Ths}{  a vector of multiple thresholds in order}
+#'\item{Ths_IC}{  a matrix of confidence intervals of all thresholds}
+#'\item{Coefs}{  parameter estimates containing t-values}
+#'\item{MCMC_Convergence_Diagnostic}{  the Gelman and Rubin's convergence diagnostic results 
+#'of MCMC sample}
+#'\item{model}{  a list of results of DMPL}
+#'\item{MCMC}{  an object of class mcmcSampler (if one chain is run) or mcmcSamplerList, 
+#'more details see BayesianTools::runMCMC}
 #'@export
 DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=FALSE
                  ,x1=NULL,tt,nn,Th=1,ms = 1000,burnin=1000,types = "DREAMzs",
-                 ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,assumption = 1,
+                 ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,
                  restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,delty0=NULL,
-                 nCR = 3,autoburnin=TRUE,sro =0.1){
+                 nCR = 3,autoburnin=TRUE,sro =0.1,display = TRUE){
 
   if(Th < 1){
     stop("\n","Th must be greater than 0 !","\n")
@@ -124,7 +131,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   nyy <- ifelse(isTRUE(NoY),1,ny)
 
   mm0 <- MLE(y=y,x=cbind(y1,x),x1=x1,cvs=cvs0,ny=1,w=w,var_u = var_u,tt=tt,nn=nn,
-             assumption = assumption,restart = restart,delty0=delty0)
+             restart = restart,delty0=delty0)
   sse0x = mm0$ssemin
 
   ybl <- length(y1)
@@ -170,7 +177,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
         }else{
 
           mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
-                        assumption = assumption,restart = restart,delty0=delty0),silent = TRUE)
+                        restart = restart,delty0=delty0),silent = TRUE)
 
           if("try-error" %in% class(mx)){
             sse0 = sse0x
@@ -242,7 +249,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   }
 
   mx <- try(MLE(y=y,x=xxx,x1=x1,cvs=cvs0,ny=nyy,w=w,var_u = var_u,tt=tt,nn=nn,
-                assumption = assumption,restart = restart,delty0=delty0,stages = 2),silent = TRUE)
+                restart = restart,delty0=delty0),silent = TRUE)
 
   if("try-error" %in% class(mx)){
     stop("There is an Error after given thresholds, please check any inputs!")
@@ -344,28 +351,30 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   rownames(jgs) <-  coefs_names
   colnames(jgs) <- c("Coefs","Significance","t-value")
 
-  cat("\n","This is a Dynamic panel threshold modedl with fixed effects.","\n",
-      "It follows Assumption ",assumption,", and Only_b =",Only_b,"!\n")
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n","Time Shifts: ",time_trend," !\n")
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n","The number of threshold is ",Th," !\n")
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n","The estiamtes of thresholds: ", "\n")
-  print(round(gamma0,3))
-  cat("\n","Their confidence intervals are : "," !\n")
-  print(round(IC,3))
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n","The coefs are: ","\n")
-  print(jgs)
-  cat("\n","---------------------------------------------------","\n")
-  cat("\n"," The Gelman and Rubin Convergence Diagnostic is ","\n")
-  print(MCMC_Convergence_Diagnostic)
-  cat("\n","If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
-  cat("\n","If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
-  cat("\n","---------------------------------------------------","\n")
+  if(display == TRUE){
+    cat("\n","This is a Dynamic panel threshold modedl with fixed effects.","!\n")
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n","Time Shifts: ",time_trend," !\n")
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n","The number of threshold is ",Th," !\n")
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n","The estiamtes of thresholds: ", "\n")
+    print(round(gamma0,3))
+    cat("\n","Their confidence intervals are : "," !\n")
+    print(round(IC,3))
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n","The coefs are: ","\n")
+    print(jgs)
+    cat("\n","---------------------------------------------------","\n")
+    cat("\n"," The Gelman and Rubin Convergence Diagnostic is ","\n")
+    print(MCMC_Convergence_Diagnostic)
+    cat("\n","If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
+    cat("\n","If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
+    cat("\n","---------------------------------------------------","\n")
+  }
+  
 
 
 

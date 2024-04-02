@@ -12,53 +12,62 @@ DPML(
   var_u = NULL,
   tt,
   nn,
-  assumption = 1,
   time_trend = FALSE,
   time_fix_effects = FALSE,
   restart = FALSE,
   x1 = NULL,
   delty0 = NULL,
-  Only_b = FALSE
+  Only_b = FALSE,
+  display = TRUE
 )
 }
 \arguments{
 \item{y}{the dependent variable; vector type input.}
 
-\item{y1}{the lag dependent variable; vector type input; By default y1 is NULL,
+\item{y1}{the lag dependent variable; vector type input; By default, y1 is NULL,
 and then y1 will be computed by y automatically.}
 
 \item{x}{the independent variable; matrix type input.}
 
-\item{w}{the variance ratio; By default is NULL; It must be greater than 1, and
-only works when assumption is 2.}
+\item{w}{the variance ratio; By default, is NULL; It must be greater than 1.}
 
-\item{var_u}{the option of variance of error term; By default is NULL; It must be
+\item{var_u}{the option of variance of error term; By default, is NULL; It must be
 greater than 0; When meet relevant ERROR, please change the var_u.}
 
 \item{tt}{the length of time period.}
 
 \item{nn}{the number of individuals.}
 
-\item{assumption}{the option of assumption; By default assumption is 1, and it can be 2;
-More details see Hsiao (2002).}
+\item{time_trend}{the time trend; By default, it is FALSE.}
 
-\item{time_trend}{the time trend; By default it is FALSE.}
+\item{time_fix_effects}{the time fixed effects; By default, it is FALSE.}
 
-\item{time_fix_effects}{the time fixed effects; By default it is FALSE.}
-
-\item{restart}{the option of iterations; By default restart is FALSE,
+\item{restart}{the option of iterations; By default, restart is FALSE,
 if encounters iteration failure, please set restart as TRUE.}
 
 \item{x1}{the initial values of independent variable; matrix type input.
-By default x1 is NULL, and thus x1 will be computed by x automatically.}
+By default, x1 is NULL, and thus x1 will be computed by x automatically.}
 
-\item{delty0}{the option of delta_y; By default delty0 is NULL; Pleas do not change delty0.}
+\item{delty0}{the option of delta_y; By default, delty0 is NULL; Please do not change delty0.}
 
-\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
-More details please see Hsiao (2002) and Ramirez-Rondan (2020).}
+\item{Only_b}{the option of initial equation;By default, Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
+Please see Hsiao (2002) and Ramírez-Rondán (2020) for more details.}
+
+\item{display}{the option of whether to print the messages of estimated results; By default, the display is TRUE.}
 }
 \value{
-A List of estimate results.
+A list containing the following components:
+\item{ssemin}{  the negaive log-likelihood function value}
+\item{Coefs}{  parameter estimates containing t-values}
+\item{pars}{  iterated results for all parameters}
+\item{duit}{  the first-difference form of residuals}
+\item{dy0}{  the first-difference form of dependent variable}
+\item{xx}{  the independent variables and their initial values}
+\item{covariance_matrix}{  the covariance matrix}
+\item{Ses}{  the standard errors of coefs}
+\item{Zvalues}{  the values of the statistic}
+\item{ccd}{  the number of independent variables}
+\item{coefs}{  parameter estimates containing their initial valuess}
 }
 \description{
 The dynamic panel linear model with fixed effects
@@ -78,11 +87,11 @@ z <- as.matrix(data$data_test_linear$z)
 tt <- data$data_test_linear$tt
 nn <- data$data_test_linear$nn
 xx <- cbind(x,z)
-m1 <- DPML(y=y,x=xx,tt=tt,nn=nn,assumption = 1)
+m1 <- DPML(y=y,x=xx,tt=tt,nn=nn)
 m1$Coefs
 }
 \references{
-Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
+Ramírez-Rondán, N. R. (2020). Maximum likelihood estimation
 of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.
 
 Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).

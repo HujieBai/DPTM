@@ -1,12 +1,12 @@
 # DPTM
 
-Dynamic Panel Threshold Models with Fixed Effects Based on Maximum Likelihood Estimation and MCMC
+Dynamic Panel Multiple Threshold Model with Fixed Effects
 
 Q1: Why you need to use it?
 
-1.  The DPTM can supply the estimation and test for the dynamic panel threshold model with multiple thresholds while there are no software of this multiple thresholds model.
+1.  The DPTM can supply the estimation and test for the dynamic panel threshold model with multiple threshold while there are no software of this multiple thresholds model.
 2.  The DPTM is based on maximum likelihood (ML) estimation while most of dynamic panel threshold model used IVs or GMM, which brings a better performance and a more convenient in use.
-3.  The DPTM is based on MCMC while most of threshold model are based grid search, which brings a better performance by avoiding the selection of step size of grid.
+3.  The DPTM is based on Markov Chain Monte Carlo (MCMC) while most of threshold model are based grid search, which brings a better performance and avoids the selection of step size of grid.
 4.  The DPTM not only allows fixed effects, but also allows time trend term or time fixed effects, which is more suitable for reality and application.
 
 Q2: How can you use it?

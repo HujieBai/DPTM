@@ -1,7 +1,7 @@
 
 
 ## Test environments
-* local windows, R 4.3.2
+* local windows, R 4.3.3
 * macOS Ventura, R 4.3.3
 * win_devel (devel and release)
 

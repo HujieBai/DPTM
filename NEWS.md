@@ -1,3 +1,6 @@
+# DPTM 1.3.5
+* CRAN resubmission.
+
 # DPTM 1.2.3
 
 # DPTM 1.1.7

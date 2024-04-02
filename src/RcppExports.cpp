@@ -37,44 +37,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// three_one
-double three_one(Eigen::VectorXd& pars1, Eigen::MatrixXd& delty0, Eigen::MatrixXd& evs, Eigen::MatrixXd& omega, int& cd, int& tt, int& nn, int& ny, double& varv1);
-RcppExport SEXP _DPTM_three_one(SEXP pars1SEXP, SEXP delty0SEXP, SEXP evsSEXP, SEXP omegaSEXP, SEXP cdSEXP, SEXP ttSEXP, SEXP nnSEXP, SEXP nySEXP, SEXP varv1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type pars1(pars1SEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type delty0(delty0SEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type evs(evsSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type omega(omegaSEXP);
-    Rcpp::traits::input_parameter< int& >::type cd(cdSEXP);
-    Rcpp::traits::input_parameter< int& >::type tt(ttSEXP);
-    Rcpp::traits::input_parameter< int& >::type nn(nnSEXP);
-    Rcpp::traits::input_parameter< int& >::type ny(nySEXP);
-    Rcpp::traits::input_parameter< double& >::type varv1(varv1SEXP);
-    rcpp_result_gen = Rcpp::wrap(three_one(pars1, delty0, evs, omega, cd, tt, nn, ny, varv1));
-    return rcpp_result_gen;
-END_RCPP
-}
-// three_oneb
-double three_oneb(Eigen::VectorXd& pars1, Eigen::MatrixXd& delty0, Eigen::MatrixXd& evs, Eigen::MatrixXd& omega, int& cd, int& tt, int& nn, int& ny, double& varv1);
-RcppExport SEXP _DPTM_three_oneb(SEXP pars1SEXP, SEXP delty0SEXP, SEXP evsSEXP, SEXP omegaSEXP, SEXP cdSEXP, SEXP ttSEXP, SEXP nnSEXP, SEXP nySEXP, SEXP varv1SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type pars1(pars1SEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type delty0(delty0SEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type evs(evsSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type omega(omegaSEXP);
-    Rcpp::traits::input_parameter< int& >::type cd(cdSEXP);
-    Rcpp::traits::input_parameter< int& >::type tt(ttSEXP);
-    Rcpp::traits::input_parameter< int& >::type nn(nnSEXP);
-    Rcpp::traits::input_parameter< int& >::type ny(nySEXP);
-    Rcpp::traits::input_parameter< double& >::type varv1(varv1SEXP);
-    rcpp_result_gen = Rcpp::wrap(three_oneb(pars1, delty0, evs, omega, cd, tt, nn, ny, varv1));
-    return rcpp_result_gen;
-END_RCPP
-}
 // three_two
 double three_two(Eigen::VectorXd& pars1, Eigen::MatrixXd& delty0, Eigen::MatrixXd& evs, Eigen::MatrixXd& omega, int& cd, int& tt, int& nn);
 RcppExport SEXP _DPTM_three_two(SEXP pars1SEXP, SEXP delty0SEXP, SEXP evsSEXP, SEXP omegaSEXP, SEXP cdSEXP, SEXP ttSEXP, SEXP nnSEXP) {
@@ -96,8 +58,6 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_DPTM_inverse_cpp", (DL_FUNC) &_DPTM_inverse_cpp, 1},
     {"_DPTM_lag_transform", (DL_FUNC) &_DPTM_lag_transform, 5},
-    {"_DPTM_three_one", (DL_FUNC) &_DPTM_three_one, 9},
-    {"_DPTM_three_oneb", (DL_FUNC) &_DPTM_three_oneb, 9},
     {"_DPTM_three_two", (DL_FUNC) &_DPTM_three_two, 7},
     {NULL, NULL, 0}
 };

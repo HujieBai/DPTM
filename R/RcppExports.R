@@ -9,14 +9,6 @@ lag_transform <- function(objs, t, n, lag, top) {
     .Call('_DPTM_lag_transform', PACKAGE = 'DPTM', objs, t, n, lag, top)
 }
 
-three_one <- function(pars1, delty0, evs, omega, cd, tt, nn, ny, varv1) {
-    .Call('_DPTM_three_one', PACKAGE = 'DPTM', pars1, delty0, evs, omega, cd, tt, nn, ny, varv1)
-}
-
-three_oneb <- function(pars1, delty0, evs, omega, cd, tt, nn, ny, varv1) {
-    .Call('_DPTM_three_oneb', PACKAGE = 'DPTM', pars1, delty0, evs, omega, cd, tt, nn, ny, varv1)
-}
-
 three_two <- function(pars1, delty0, evs, omega, cd, tt, nn) {
     .Call('_DPTM_three_two', PACKAGE = 'DPTM', pars1, delty0, evs, omega, cd, tt, nn)
 }

@@ -23,7 +23,6 @@ Threshold_Test(
   r0x = NULL,
   r1x = NULL,
   NoY = FALSE,
-  assumption = 1,
   restart = FALSE,
   Only_b = FALSE,
   w = NULL,
@@ -33,27 +32,28 @@ Threshold_Test(
   bt = 100,
   parallel = TRUE,
   seeds = 2024,
-  sro = 0.1
+  sro = 0.1,
+  display = TRUE
 )
 }
 \arguments{
 \item{y}{the dependent variable; vector type input.}
 
-\item{y1}{the lag dependent variable; vector type input; By default y1 is NULL,
+\item{y1}{the lag dependent variable; vector type input; By default, y1 is NULL,
 and then y1 will be computed by y automatically.}
 
 \item{x}{the independent variable; matrix type input.}
 
 \item{q}{the threshold variable; vector type input.}
 
-\item{cvs}{the set of control variables; matrix type input;By default cvs is NULL.}
+\item{cvs}{the set of control variables; matrix type input;By default, cvs is NULL.}
 
-\item{time_trend}{the time trend; By default it is FALSE.}
+\item{time_trend}{the time trend; By default, it is FALSE.}
 
-\item{time_fix_effects}{the time fixed effects; By default it is FALSE.}
+\item{time_fix_effects}{the time fixed effects; By default, it is FALSE.}
 
 \item{x1}{the initial values of independent variable; matrix type input.
-By default x1 is NULL, and thus x1 will be computed by x automatically.}
+By default, x1 is NULL, and thus x1 will be computed by x automatically.}
 
 \item{tt}{the length of time period.}
 
@@ -69,28 +69,24 @@ By default x1 is NULL, and thus x1 will be computed by x automatically.}
 
 \item{ADs}{the options for MCMC; More details see BayesianTools::runMCMC.}
 
-\item{r0x}{the lower bound of thresholds; By default r0x is NULL,
+\item{r0x}{the lower bound of thresholds; By default, r0x is NULL,
 and thus r0x will be computed by q automatically.}
 
-\item{r1x}{the upper bound of thresholds; By default r0x is NULL,
+\item{r1x}{the upper bound of thresholds; By default, r0x is NULL,
 and thus r1x will be computed by q automatically.}
 
 \item{NoY}{the option of threshold effects on the lag dependent variable;
-By default NoY is False, and thus there will be threshold effects on y1.}
+By default, NoY is False, and thus there will be threshold effects on y1.}
 
-\item{assumption}{the option of assumption; By default assumption is 1, and it can be 2;
-More details see Hsiao (2002).}
-
-\item{restart}{the option of iterations; By default restart is FALSE,
+\item{restart}{the option of iterations; By default, restart is FALSE,
 if encounters iteration failure, please set restart as TRUE.}
 
-\item{Only_b}{the option of initial equation;By default Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
-More details please see Hsiao (2002) and Ramirez-Rondan (2020).}
+\item{Only_b}{the option of initial equation;By default, Only_b is FALSE, and if Only_b is TRUE, initial delta y will be a constant C.
+Please see Hsiao (2002) and Ramírez-Rondán (2020) for more details.}
 
-\item{w}{the variance ratio; By default is NULL; It must be greater than 1, and
-only works when assumption is 2.}
+\item{w}{the variance ratio; By default, is NULL; It must be greater than 1.}
 
-\item{var_u}{the option of variance of error term; By default is NULL; It must be
+\item{var_u}{the option of variance of error term; By default, is NULL; It must be
 greater than 0; When meet relevant ERROR, please change the var_u.}
 
 \item{nCR}{parameter determining the number of cross-over proposals of DREAM MCMC. If nCR = 1
@@ -103,15 +99,24 @@ will be applied.}
 
 \item{bt}{the number of bootstrap.}
 
-\item{parallel}{the option of parallel; By default parallel is FALSE, when parallel is TRUE, this test will run in parallel.}
+\item{parallel}{the option of parallel; By default, parallel is FALSE, when parallel is TRUE, this test will run in parallel.}
 
 \item{seeds}{the random seed.}
 
 \item{sro}{the least ratio of sample in regimes.}
+
+\item{display}{the option of whether to print the messages of estimated results; By default, the display is TRUE.}
+}
+\value{
+A list containing the following components:
+\item{ps}{  the p-value of test}
+\item{crit}{  the crit value of test}
+\item{LR}{  the statistic}
+\item{LRs}{  a vector of statistics in bootstrap}
 }
 \description{
-DPTS This is a dynamic panel threshold model with fixed effects, which
-allows multiple thresholds, time trend term or time fixed effects.
+Threshold_Test This is a test for the numer of thresholds, and it is noted that 
+when under H0 the number of Thresholds is 0, this test is the so called threshold existence test.
 }
 \examples{
 data("data", package = "DPTM")
@@ -121,17 +126,17 @@ x <- as.matrix(data$data_test$x)
 z <- as.matrix(data$data_test$z)
 tt <- data$data_test$tt
 nn <- data$data_test$nn
-\dontrun{
+\donttest{
 ### Examples elapsed time > 5s
 m1 <- Threshold_Test(y=y,x=x,q=q,cvs=z,tt=tt,nn=nn,Th=0,ms = 500,burnin=500,
-assumption = 1,bt=100,parallel=TRUE)
+bt=10,parallel=FALSE)
 m1$ps
 }
 
 
 }
 \references{
-Ramirez-Rondan, N. R. (2020). Maximum likelihood estimation
+Ramírez-Rondán, N. R. (2020). Maximum likelihood estimation
 of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.
 
 Hsiao, C., Pesaran, M. H., & Tahmiscioglu, A. K. (2002).
