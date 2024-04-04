@@ -38,7 +38,6 @@
 #'@param sro the least ratio of sample in regimes.
 #'@param bt the number of bootstrap.
 #'@param parallel the option of parallel; By default, parallel is FALSE, when parallel is TRUE, this test will run in parallel.
-#'@param seeds the random seed.
 #'@param display the option of whether to print the messages of estimated results; By default, the display is TRUE.
 #'@references Ramírez-Rondán, N. R. (2020). Maximum likelihood estimation
 #' of dynamic panel threshold models. Econometric Reviews, 39(3), 260-276.
@@ -74,7 +73,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
                            ,x1=NULL,tt,nn,Th=0,ms = 1000,burnin=1000,types = "DREAMzs",
                            ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,
                            restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,
-                           nCR = 3,autoburnin=TRUE,bt=100,parallel=TRUE,seeds = 2024,sro =0.1,
+                           nCR = 3,autoburnin=TRUE,bt=100,parallel=TRUE,sro =0.1,
                            display = TRUE){
   if(display == TRUE){
     cat("\n","Test for the number of Thresholds","\n")
@@ -87,7 +86,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
   }
 
   if(Th == 0){
-    set.seed(seeds)
+ 
     m0 <- DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                x1=x1,Only_b = Only_b,display = FALSE)
@@ -97,7 +96,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     dfit <- dy - du
     m0s <- as.vector(m0$ssemin)
   }else{
-    set.seed(seeds)
+
     m0 <- DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -110,7 +109,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     m0s <- as.vector(m0$ssemin)
   }
 
-  set.seed(seeds)
+
   m1 <- DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
              ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
              ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -130,20 +129,20 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
   btprocedure = function(j){
 
-    set.seed(j)
+
     cy = sample(1:nn,nn,replace = TRUE)
     dub = du[,cy]
     dyb = matrix(dfit + dub,ncol = 1)
 
     if(Th == 0){
-      set.seed(j)
+
       m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                                             time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                             x1=x1,Only_b = Only_b,delty0=dyb,display = FALSE))
 
 
     }else{
-      set.seed(j)
+
       m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -152,29 +151,28 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
 
     }
-    set.seed(j)
+
     m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                           ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                           ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
                                           restart = restart,Only_b = Only_b,w=w,var_u = var_u,
                                           nCR = nCR,autoburnin=autoburnin,delty0=dyb,sro = sro,display = FALSE))
-    jj = j
+
     while("try-error" %in% class(m0b) | "try-error" %in% class(m1b)){
-      jj = jj + jj
-      set.seed(jj)
+
       cy = sample(1:nn,nn,replace = TRUE)
       dub = du[,cy]
       dyb = matrix(dfit + dub,ncol = 1)
 
       if(Th == 0){
-        set.seed(jj)
+   
         m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                                               time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                               x1=x1,Only_b = Only_b,delty0=dyb,display = FALSE))
 
 
       }else{
-        set.seed(jj)
+
         m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                                ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                                ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -183,7 +181,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
 
       }
-      set.seed(jj)
+
       m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,

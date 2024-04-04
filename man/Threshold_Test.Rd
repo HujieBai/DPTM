@@ -31,7 +31,6 @@ Threshold_Test(
   autoburnin = TRUE,
   bt = 100,
   parallel = TRUE,
-  seeds = 2024,
   sro = 0.1,
   display = TRUE
 )
@@ -100,8 +99,6 @@ will be applied.}
 \item{bt}{the number of bootstrap.}
 
 \item{parallel}{the option of parallel; By default, parallel is FALSE, when parallel is TRUE, this test will run in parallel.}
-
-\item{seeds}{the random seed.}
 
 \item{sro}{the least ratio of sample in regimes.}
 
