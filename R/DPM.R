@@ -63,19 +63,16 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
   dy0_iv <-  lag_transform(delty0,tt-1,nn,2,FALSE)
 
   dyy <- as.matrix(deltxs[,1:ny])
-  dxx <- deltxs[,(ny+1):ncol(deltxs)]
+  ny1 <- ifelse(ncol(deltxs)==1,1,ny+1)
+  dxx <- deltxs[,ny1:ncol(deltxs)]
 
   dx3 <-  lag_transform(as.matrix(dxx),tt-1,nn,2,FALSE)
   dy1 <- cbind( lag_transform(dyy,tt-1,nn,2,FALSE),dx3)
   dy2 <- cbind( lag_transform( lag_transform(dyy,tt-1,nn,1,FALSE),tt-2,nn,1,TRUE),dx3)
 
   leftiv <- t(dy2)%*%dy1
-  if(qr(leftiv)$rank != ncol(leftiv)){
-    stop("\n","The IV Matrix (t(Y_2)Y_1) is singular!","\n",
-         "Please check the input y and x!","\n")
-  }
 
-  betas_iv <- c(as.vector(inverse_cpp(leftiv)%*%(t(dy2)%*%dy0_iv)),delts)
+  betas_iv <- c(as.vector(MASS::ginv(leftiv)%*%(t(dy2)%*%dy0_iv)),delts)
 
   deltu <- as.vector(delty0 - deltxx%*%betas_iv)
   if(!is.null(var_u)){
@@ -151,11 +148,11 @@ MLE <- function(y,x=NULL,delty0 =NULL,x1=NULL,cvs=NULL,ny=1,w=NULL,var_u = NULL,
 
   cms = matrix(0,nrow = evs,ncol = evs)
 
-  ww <- varv1/pars[cd]
+  ww <- pars[cd]
 
   xomega = omega
   xomega[1,1] = ww
-  xomega = xomega*pars[cd]
+  xomega = xomega*pars[cd-1]
   xomega = inverse_cpp(xomega)
 
   for (i in 1:nn) {
@@ -260,13 +257,14 @@ MAP2 <- function (bayesianOutput, ...)
 #'@importFrom purrr map_dbl
 #'@importFrom MASS ginv
 #'@importFrom coda gelman.diag
+#'@importFrom utils capture.output
 #'@export
 DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,
                  time_trend =FALSE,time_fix_effects=FALSE,restart = FALSE,
                  x1=NULL,delty0=NULL,Only_b = FALSE,display = TRUE){
   ny=1
   time_shifts <- as.matrix(rep(1:tt,nn))
-  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2,3)]
+  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2)]
   if(all(c(time_trend,time_fix_effects))){
     stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted! ","\n")
   }

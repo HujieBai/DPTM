@@ -84,7 +84,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   ny= Th+1
 
   time_shifts <- as.matrix(rep(1:tt,nn))
-  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2,3)]
+  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2)]
   if(all(c(time_trend,time_fix_effects))){
     stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ","\n")
   }
@@ -99,8 +99,12 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     r1=r1x
   }
 
-  if(is.null(x1)){
-    x1 = cbind(x,cvs)
+  if(isTRUE(Only_b)){
+    x1 = NULL
+  }else{
+    if(is.null(x1)){
+      x1 = cbind(x,cvs)
+    }
   }
 
   if(is.null(y1)){
@@ -208,9 +212,9 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   }
 
 
-  out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup,
+  ins <- utils::capture.output(out <- BayesianTools::runMCMC(bayesianSetup = bayesianSetup,
                                 sampler = types,
-                                settings = settings)
+                                settings = settings))
 
   samples = BayesianTools::getSample(out,parametersOnly = F)
   mres = MAP2(out)
