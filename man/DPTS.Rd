@@ -2,7 +2,7 @@
 % Please edit documentation in R/thresholdS.R
 \name{DPTS}
 \alias{DPTS}
-\title{The Dynamic panel threshold model with multiple thresholds}
+\title{The dynamic panel multiple threshold model with fixed effects}
 \usage{
 DPTS(
   y,
@@ -106,7 +106,7 @@ A list containing the following components:
 \item{ssemin}{  the negaive log-likelihood function value}
 \item{Ths}{  a vector of multiple thresholds in order}
 \item{Ths_IC}{  a matrix of confidence intervals of all thresholds}
-\item{Coefs}{  parameter estimates containing t-values}
+\item{Coefs}{  parameter estimates containing Z-values}
 \item{MCMC_Convergence_Diagnostic}{  the Gelman and Rubin's convergence diagnostic results 
 of MCMC sample}
 \item{model}{  a list of results of DMPL}
@@ -114,7 +114,7 @@ of MCMC sample}
 more details see BayesianTools::runMCMC}
 }
 \description{
-DPTS This is a dynamic panel threshold model with fixed effects, which
+DPTS This is the dynamic panel multiple threshold model with fixed effects, which
 allows multiple thresholds, time trend term or time fixed effects.
 }
 \examples{

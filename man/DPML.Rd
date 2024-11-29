@@ -58,7 +58,7 @@ Please see Hsiao (2002) and Ramírez-Rondán (2020) for more details.}
 \value{
 A list containing the following components:
 \item{ssemin}{  the negaive log-likelihood function value}
-\item{Coefs}{  parameter estimates containing t-values}
+\item{Coefs}{  parameter estimates containing Z-values}
 \item{pars}{  iterated results for all parameters}
 \item{duit}{  the first-difference form of residuals}
 \item{dy0}{  the first-difference form of dependent variable}
@@ -74,7 +74,7 @@ The dynamic panel linear model with fixed effects
 }
 \section{Functions}{
 \itemize{
-\item \code{DPML()}: This is a dynamic panel linear model with fixed effects, which
+\item \code{DPML()}: This is an dynamic panel linear model with fixed effects, which
 allows time trend term or time fixed effects.
 
 }}

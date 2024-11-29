@@ -235,11 +235,11 @@ MAP2 <- function (bayesianOutput, ...)
 #'xx <- cbind(x,z)
 #'m1 <- DPML(y=y,x=xx,tt=tt,nn=nn)
 #'m1$Coefs
-#'@describeIn DPML This is a dynamic panel linear model with fixed effects, which
+#'@describeIn DPML This is an dynamic panel linear model with fixed effects, which
 #'allows time trend term or time fixed effects.
 #'@returns A list containing the following components:
 #'\item{ssemin}{  the negaive log-likelihood function value}
-#'\item{Coefs}{  parameter estimates containing t-values}
+#'\item{Coefs}{  parameter estimates containing Z-values}
 #'\item{pars}{  iterated results for all parameters}
 #'\item{duit}{  the first-difference form of residuals}
 #'\item{dy0}{  the first-difference form of dependent variable}
@@ -300,7 +300,7 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,
 
   coefs <- round(fit_model$coefs,3)
   Zvalues <- fit_model$Zvalues
-  alpha_values <- round(abs(stats::qt(c(0.05,0.025,0.005),1e7)),3)
+  alpha_values <- round(abs(stats::qnorm(c(0.05,0.025,0.005))),3)
 
   coefs_names <- c()
   xzx <- c()
@@ -332,16 +332,18 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,
     }
 
   }
-
+  
+  Ses <- round(fit_model$Ses[1:length(coefs)],3)
   Zvalues <- round(Zvalues[1:length(coefs)],3)
-  jgs <- cbind(coefs,xzx,Zvalues)
+  pvalues <- round(2*(1-pnorm(abs(Zvalues))),3)
+  jgs <- cbind(coefs,Ses,Zvalues,pvalues,xzx)
   rownames(jgs) <-  coefs_names
-  colnames(jgs) <- c("Coefs","Significance","t-value")
+  colnames(jgs) <- c("Estimate","Std. Error","Z-value","Pr(>|z|)","Significance")
 
   jgs <- jgs[1:fit_model$ccd,]
   
   if(display == TRUE){
-    cat("\n","This is a Dynamic panel modedl with fixed effects.","\n")
+    cat("\n","This is an dynamic panel linear model with fixed effects","\n")
     cat("\n","---------------------------------------------------","\n")
     cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
     cat("\n","---------------------------------------------------","\n")

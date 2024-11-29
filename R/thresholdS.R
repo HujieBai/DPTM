@@ -1,4 +1,4 @@
-#'@title The Dynamic panel threshold model with multiple thresholds
+#'@title The dynamic panel multiple threshold model with fixed effects
 #'@param y the dependent variable; vector type input.
 #'@param x the independent variable; matrix type input.
 #'@param y1 the lag dependent variable; vector type input; By default, y1 is NULL,
@@ -58,13 +58,13 @@
 #'m1$MCMC_Convergence_Diagnostic
 #'plot(m1$MCMC)
 #'@description
-#'DPTS This is a dynamic panel threshold model with fixed effects, which
+#'DPTS This is the dynamic panel multiple threshold model with fixed effects, which
 #'allows multiple thresholds, time trend term or time fixed effects.
 #'@returns A list containing the following components:
 #'\item{ssemin}{  the negaive log-likelihood function value}
 #'\item{Ths}{  a vector of multiple thresholds in order}
 #'\item{Ths_IC}{  a matrix of confidence intervals of all thresholds}
-#'\item{Coefs}{  parameter estimates containing t-values}
+#'\item{Coefs}{  parameter estimates containing Z-values}
 #'\item{MCMC_Convergence_Diagnostic}{  the Gelman and Rubin's convergence diagnostic results 
 #'of MCMC sample}
 #'\item{model}{  a list of results of DMPL}
@@ -264,11 +264,13 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   colnames(IC) <- rep(c("Lower","Upper"),Th)
   rownames(IC) <- c("90%","95%","99%")
 
+  thnames <- c()
   for (i in 1:Th) {
-    IC[1,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.05),stats::quantile(samples[,i],0.95))
-    IC[2,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.025),stats::quantile(samples[,i],0.975))
-    IC[3,(2*i-1):(2*i)] = c(stats::quantile(samples[,i],0.005),stats::quantile(samples[,i],0.995))
-  }
+    IC[1,(2*i-1):(2*i)] = round(c(stats::quantile(samples[,i],0.05),stats::quantile(samples[,i],0.95)),3)
+    IC[2,(2*i-1):(2*i)] = round(c(stats::quantile(samples[,i],0.025),stats::quantile(samples[,i],0.975)),3)
+    IC[3,(2*i-1):(2*i)] = round(c(stats::quantile(samples[,i],0.005),stats::quantile(samples[,i],0.995)),3)
+    thnames <- c(thnames,paste("Th_",i, sep = ""))
+    }
 
   chains <- out$chain
 
@@ -293,11 +295,8 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     Coefs2 <-  betas[(nyy+nxx+1):(nyy+nxx+ncc)]
   }
 
-
-
-
   Zvalues <- mx$Zvalues[1:(nyy+nxx+ncc)]
-  alpha_values <- round(abs(stats::qt(c(0.05,0.025,0.005),1e7)),3)
+  alpha_values <- round(abs(stats::qnorm(c(0.05,0.025,0.005))),3)
 
   coefs_names <- c()
   xzx <- c()
@@ -350,21 +349,27 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     }
   }
 
+  
+  Ses <- round(mx$Ses[1:length(xzx)],3)
   Zvalues <- round(Zvalues[1:length(xzx)],3)
-  jgs <- cbind(round(c(Coefs0,Coefs1,Coefs2),3),xzx,Zvalues)
+  pvalues <- round(2*(1-pnorm(abs(Zvalues))),3)
+  jgs <- cbind(round(betas,3),Ses,Zvalues,pvalues,xzx)
   rownames(jgs) <-  coefs_names
-  colnames(jgs) <- c("Coefs","Significance","t-value")
+  colnames(jgs) <- c("Estimate","Std. Error","Z-value","Pr(>|z|)","Significance")
+
+  names(gamma0) <- thnames
+  gamma0 <- round(gamma0,3)
 
   if(display == TRUE){
-    cat("\n","This is a Dynamic panel threshold modedl with fixed effects.","!\n")
+    cat("\n","This is an dynamic panel threshold model with fixed effects","!\n")
     cat("\n","---------------------------------------------------","\n")
     cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
     cat("\n","---------------------------------------------------","\n")
     cat("\n","Time Shifts: ",time_trend," !\n")
     cat("\n","---------------------------------------------------","\n")
-    cat("\n","The number of threshold is ",Th," !\n")
+    cat("\n","The number of thresholds is ",Th," !\n")
     cat("\n","---------------------------------------------------","\n")
-    cat("\n","The estiamtes of thresholds: ", "\n")
+    cat("\n","The estimate of thresholds: ", "\n")
     print(round(gamma0,3))
     cat("\n","Their confidence intervals are : "," !\n")
     print(round(IC,3))
@@ -374,8 +379,8 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     cat("\n","---------------------------------------------------","\n")
     cat("\n"," The Gelman and Rubin Convergence Diagnostic is ","\n")
     print(MCMC_Convergence_Diagnostic)
-    cat("\n","If the  Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
-    cat("\n","If there any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
+    cat("\n","If the Upper C.I. are not close to 1, please set a longer burn-in or ms !","\n")
+    cat("\n","If there is any Inf or NaN, please set a longer burn-in or ms, or set nCR as 1 !","\n")
     cat("\n","---------------------------------------------------","\n")
   }
   
@@ -384,6 +389,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
 
 
   mx$Coefs <- jgs
+
 
   return(list(Ths = gamma0, Ths_IC = IC, Coefs = jgs,ssemin = ssemin,
               MCMC_Convergence_Diagnostic = MCMC_Convergence_Diagnostic,model = mx,MCMC = out))
