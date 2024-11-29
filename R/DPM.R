@@ -235,7 +235,7 @@ MAP2 <- function (bayesianOutput, ...)
 #'xx <- cbind(x,z)
 #'m1 <- DPML(y=y,x=xx,tt=tt,nn=nn)
 #'m1$Coefs
-#'@describeIn DPML This is an dynamic panel linear model with fixed effects, which
+#'@describeIn DPML This is a dynamic panel linear model with fixed effects, which
 #'allows time trend term or time fixed effects.
 #'@returns A list containing the following components:
 #'\item{ssemin}{  the negaive log-likelihood function value}
@@ -343,7 +343,7 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,
   jgs <- jgs[1:fit_model$ccd,]
   
   if(display == TRUE){
-    cat("\n","This is an dynamic panel linear model with fixed effects","\n")
+    cat("\n","This is a dynamic panel linear model with fixed effects!","\n")
     cat("\n","---------------------------------------------------","\n")
     cat("\n","Time Fixed Effects: ",time_fix_effects," !\n")
     cat("\n","---------------------------------------------------","\n")

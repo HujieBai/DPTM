@@ -1,7 +1,7 @@
 Package: DPTM
 Type: Package
 Title: Dynamic Panel Multiple Threshold Model with Fixed Effects
-Version: 1.5.2
+Version: 1.6.1
 Date: 2024-11-29
 Authors@R: 
     person("Bai", "Hujie", , "hujiebai@163.com", role = c("aut", "cre", "cph"),
