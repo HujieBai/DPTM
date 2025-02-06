@@ -216,8 +216,8 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     Btimes <- bt
 
     set_option("progress_track", TRUE)
-    
-    backend <- start_backend(cores = 4, cluster_type = "psock", backend_type = "async")
+    cores_number <- parallel::detectCores()
+    backend <- start_backend(cores = cores_number, cluster_type = "psock", backend_type = "async")
     
     configure_bar(type = "basic", style = 3)
     
