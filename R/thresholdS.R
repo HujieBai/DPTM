@@ -286,12 +286,12 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
 
 
   nxx <- ifelse(is.null(x),0,ncol(x)*ncol(rts0))
-  ncc <- ifelse(is.null(cvs),0,ncol(cvs))
+  ncc <- ifelse(is.null(cvs0),0,ncol(cvs0))
 
   Coefs0 <-  betas[1:nyy]
   Coefs1 <- as.vector(t( matrix(betas[(nyy+1):(nyy+nxx)],ncol(x),byrow = TRUE)))
   Coefs2 <-  NULL
-  if(!is.null(cvs)){
+  if(!is.null(cvs0)){
     Coefs2 <-  betas[(nyy+nxx+1):(nyy+nxx+ncc)]
   }
 
@@ -343,8 +343,8 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
     }
   }
 
-  if(!is.null(cvs)){
-    for (i in 1:ncol(cvs)) {
+  if(!is.null(cvs0)){
+    for (i in 1:ncol(cvs0)) {
       coefs_names <- c(coefs_names,paste("Control_", i, sep = ""))
     }
   }
