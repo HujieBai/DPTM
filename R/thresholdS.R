@@ -84,7 +84,7 @@ DPTS <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fix_effects=
   ny= Th+1
 
   time_shifts <- as.matrix(rep(1:tt,nn))
-  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2)]
+  time_effects <- kronecker(rep(1,nn),diag(tt))[,-1]
   if(all(c(time_trend,time_fix_effects))){
     stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted ! ","\n")
   }

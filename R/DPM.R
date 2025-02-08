@@ -264,7 +264,7 @@ DPML <- function(y,y1=NULL,x=NULL,w=NULL,var_u = NULL,tt,nn,
                  x1=NULL,delty0=NULL,Only_b = FALSE,display = TRUE){
   ny=1
   time_shifts <- as.matrix(rep(1:tt,nn))
-  time_effects <- kronecker(rep(1,nn),diag(tt))[,-c(1,2)]
+  time_effects <- kronecker(rep(1,nn),diag(tt))[,-1]
   if(all(c(time_trend,time_fix_effects))){
     stop("\n","time_fix_effects or time_shifts, that both are TRUE can not be accepted! ","\n")
   }

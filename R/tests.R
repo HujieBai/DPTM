@@ -74,7 +74,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
                            ADs = FALSE,r0x=NULL,r1x=NULL,NoY = FALSE,
                            restart = FALSE,Only_b = FALSE,w=NULL,var_u = NULL,
                            nCR = 3,autoburnin=TRUE,bt=100,parallel=TRUE,sro =0.1,
-                           display = TRUE){
+                           display = TRUE,seed = NULL){
   if(display == TRUE){
     cat("\n","Test for the number of Thresholds","\n")
     cat("\n","It is noted that when under H0 the number of Thresholds is 0, this test is the so called threshold existence test.","\n")
@@ -85,8 +85,12 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     cat("\n","---------------------------------------------------","\n")
   }
 
+  seed <- ifelse(is.null(seed),2024,seed)
+  set.seed(seed)
+  bt.seed <- sample(1:bt^2,bt,replace = TRUE)
   if(Th == 0){
  
+    set.seed(seed)
     m0 <- DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                x1=x1,Only_b = Only_b,display = FALSE)
@@ -97,6 +101,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
     m0s <- as.vector(m0$ssemin)
   }else{
 
+    set.seed(seed)
     m0 <- DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -110,6 +115,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
   }
 
 
+  set.seed(seed)
   m1 <- DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
              ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
              ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -130,12 +136,14 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
   btprocedure = function(j){
 
 
+    set.seed(bt.seed[j])
     cy = sample(1:nn,nn,replace = TRUE)
     dub = du[,cy]
     dyb = matrix(dfit + dub,ncol = 1)
 
     if(Th == 0){
 
+      set.seed(bt.seed[j])
       m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                                             time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                             x1=x1,Only_b = Only_b,delty0=dyb,display = FALSE))
@@ -143,6 +151,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
     }else{
 
+      set.seed(bt.seed[j])
       m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -152,6 +161,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
     }
 
+    set.seed(bt.seed[j])
     m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                           ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                           ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -160,12 +170,14 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
     while("try-error" %in% class(m0b) | "try-error" %in% class(m1b)){
 
+      set.seed(bt.seed[j]+1)
       cy = sample(1:nn,nn,replace = TRUE)
       dub = du[,cy]
       dyb = matrix(dfit + dub,ncol = 1)
 
       if(Th == 0){
    
+        set.seed(bt.seed[j]+1)
         m0b <- try(DPML(y=y,y1=y1,x=cbind(x,cvs),w=w,var_u = var_u,tt,nn,
                                               time_trend = time_trend,time_fix_effects=time_fix_effects,restart = restart,
                                               x1=x1,Only_b = Only_b,delty0=dyb,display = FALSE))
@@ -173,6 +185,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
       }else{
 
+        set.seed(bt.seed[j]+1)
         m0b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                                ,x1=x1,tt=tt,nn=nn,Th=Th,ms = ms,burnin=burnin,types = types,
                                                ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
@@ -182,6 +195,7 @@ Threshold_Test <- function(y,y1=NULL,x=NULL,q,cvs=NULL,time_trend =FALSE,time_fi
 
       }
 
+      set.seed(bt.seed[j]+1)
       m1b <- try(DPTS(y=y,y1=y1,x=x,q=q,cvs=cvs,time_trend =time_trend,time_fix_effects=time_fix_effects
                                             ,x1=x1,tt=tt,nn=nn,Th=Th+1,ms = ms,burnin=burnin,types = types,
                                             ADs = ADs,r0x=r0x,r1x=r1x,NoY = NoY,
