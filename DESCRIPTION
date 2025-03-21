@@ -1,16 +1,16 @@
 Package: DPTM
 Type: Package
 Title: Dynamic Panel Multiple Threshold Model with Fixed Effects
-Version: 1.7.1
-Date: 2025-2-8
+Version: 2.0.0
+Date: 2025-3-21
 Authors@R: 
     person("Bai", "Hujie", , "hujiebai@163.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0009-0004-2060-4351"))
-Description: Compute the fixed effects dynamic panel threshold model suggested by Ramírez-Rondán (2020) <doi:10.1080/07474938.2019.1624401>, and dynamic panel linear model suggested by Hsiao et al. (2002) <doi:10.1016/S0304-4076(01)00143-9>, where maximum likelihood type estimators are used. Multiple threshold estimation based on Markov Chain Monte Carlo (MCMC) is allowed, and model selection of linear model, threshold model and multiple threshold model is also allowed.
+Description: Compute the fixed effects dynamic panel threshold model suggested by Ramírez-Rondán (2020) <doi:10.1080/07474938.2019.1624401>, and dynamic panel linear model suggested by Hsiao et al. (2002) <doi:10.1016/S0304-4076(01)00143-9>, where maximum likelihood type estimators are used. Multiple thresholds estimation based on Markov Chain Monte Carlo (MCMC) is allowed, and model selection of linear model, threshold model and multiple threshold model is also allowed.
 License: GPL (>= 3)
 URL: https://github.com/HujieBai/DPTM
 Encoding: UTF-8
-Imports: Rcpp (>= 1.0.12),BayesianTools, purrr, MASS,stats,coda,parabar,utils
+Imports: Rcpp (>= 1.0.12),R6,BayesianTools, purrr, MASS,stats,coda,parabar,utils
 LinkingTo: Rcpp,RcppEigen
 RoxygenNote: 7.3.2
 Depends: 
