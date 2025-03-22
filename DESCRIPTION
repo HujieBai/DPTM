@@ -1,7 +1,7 @@
 Package: DPTM
 Type: Package
 Title: Dynamic Panel Multiple Threshold Model with Fixed Effects
-Version: 2.0.0
+Version: 3.0.2
 Date: 2025-3-21
 Authors@R: 
     person("Bai", "Hujie", , "hujiebai@163.com", role = c("aut", "cre", "cph"),
@@ -16,3 +16,4 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.3.0)
 LazyData: true
+BugReports: https://github.com/HujieBai/DPTM/issues

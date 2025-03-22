@@ -8,6 +8,7 @@ Q1: Why you need to use it?
 2.  The DPTM is based on maximum likelihood (ML) estimation while most of dynamic panel threshold model used IVs or GMM, which brings a better performance and a more convenient in use.
 3.  The DPTM is based on Markov Chain Monte Carlo (MCMC) method while most of threshold model are based grid search method, which brings a better performance and avoids the selection of step size of grid.
 4.  The DPTM not only allows fixed effects, but also allows time trend term or time fixed effects, which is more suitable for reality and application.
+5.  Various forms of threshold models are available。
 
 Q2: How can you use it?
 

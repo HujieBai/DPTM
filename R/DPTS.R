@@ -97,9 +97,9 @@
 #'# single threshold
 #'
 #'## standard form 
-#'Model1_1 <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1, 
-#'iterations = 1000)
-#'print(Model1_1)
+#'#Model1_1 <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1, 
+#'#iterations = 1000)
+#'#print(Model1_1)
 #'
 #'\donttest{
 #'### Examples elapsed time > 15s

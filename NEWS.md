@@ -1,26 +1,9 @@
-# DPTM 1.5.2
-* Replace pt() by pnorm().
-* Add more details in printing of estimate.
+# DPTM 3.0.2
 
-# DPTM 1.5.0
-* Correct the estimate of standard errors.
+# DPTM 3.0.0
 
-# DPTM 1.3.8
+* Rewrote the entire package in OOP (R6 class).
+* Detailed instructions and examples have been added to make it more user-friendly.
+* The formula interface of R language is exploited, which is more standardized and easy to use.
 
-# DPTM 1.3.7
-* CRAN resubmission.
-
-# DPTM 1.3.6
-
-# DPTM 1.3.5
-* CRAN resubmission.
-
-# DPTM 1.2.3
-
-# DPTM 1.1.7
-
-* Initial CRAN submission.
-* Supply the linear dynamic panel fixed effects model.
-* Supply the dynamic panel multiple thresholds model.
-* Supply the test for the number of thresholds.
-
+# DPTM 2.0.0
