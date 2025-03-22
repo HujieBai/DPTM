@@ -30,4 +30,4 @@ Q3: How can you get it?
 
 Please use?DPTM::DPTS to see more useful details.
 
-(I'm a PhD candidate at Lingnan College of Sun Yat-sen University, thank you very much for your recognition of my work.)
+(I'm a PhD candidate at Lingnan College of Sun Yat-sen University, thank you very much for your recognition of my work!)
