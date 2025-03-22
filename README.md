@@ -22,9 +22,11 @@ Q3: How can you get it?
 
 #2025.3.22 (Version 3.0.2)
 
-Rewrote the entire package in OOP (R6 class).
-Detailed instructions and examples have been added to make it more user-friendly.
-The formula interface of the R language is exploited, which is more standardized and easy to use.
+1. Rewrote the entire package in OOP (R6 class).
+
+2. Detailed instructions and examples have been added to make it more user-friendly.
+
+3. The formula interface of the R language is exploited, which is more standardized and easy to use.
 
 Please use?DPTM::DPTS to see more useful details.
 
