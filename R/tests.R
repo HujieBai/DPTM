@@ -17,13 +17,19 @@
 #'@param sro regime (subsample) proportion; If a setting is not provided, defaults (10\%) will be used. Defaults to `0.1`.
 #'@param r0x lower bound of threshold parameter space; If a setting is not provided, defaults (15\% quantile of threshold variable) will be used.
 #'@param r1x upper bound of threshold parameter space; If a setting is not provided, defaults (85\% quantile of threshold variable) will be used.
+#'@param grid_search logicals. If TRUE, thresholds in \code{DPTS} calls are searched by deterministic grid search instead of MCMC. Defaults to `FALSE`.
+#'@param grids number of grid points (threshold vectors) searched when \code{grid_search = TRUE}. Defaults to `100`.
+#'@param grid_search_type type of grid search for multiple thresholds. \code{"jointly"} searches the full Cartesian grid (\code{grids^Th}); \code{"sequential"} adds thresholds one at a time (\code{grids * Th}). Defaults to \code{"jointly"}.
+#'@param grid_search_iter number of coordinate-refinement cycles after the initial grid search when \code{grid_search = TRUE}. Defaults to \code{1}.
 #'@param parallel logicals. If TRUE test will run in parallel for saving time. Defaults to `TRUE`.
 #'@param seed set seeds to guarantee the replication the test (see set.seed);
 #'@param ... additional arguments to be passed to the settings of MCMC (see BayesianTools::applySettingsDefault)
 #'
 #'@usage Threshold_Test(formula, formula_cv, data, index=NULL, Th = 0, q, 
 #'timeFE = FALSE, bt = 100,NoY = FALSE, y1 = NULL, iterations = 2000, sro = 0.1,
-#'r0x = NULL, r1x = NULL, parallel=TRUE, seed = NULL,...)
+#'r0x = NULL, r1x = NULL, grid_search = FALSE, grids = 100,
+#'grid_search_type = c("jointly", "sequential"), grid_search_iter = 1,
+#'parallel=TRUE, seed = NULL,...)
 #'
 #'@details
 #'\code{Threshold_Test} can run the Test for multiple thresholds (\code{Th} is H1).
@@ -42,6 +48,9 @@
 #'\code{bt} is the number of bootstrap (by default is 100);
 #'\code{parallel} can allow user to run test in parallel to save time;
 #'\code{seed} is used to guarantee the replication of tests.
+#'When \code{grid_search = TRUE}, the null and alternative threshold models in the test use the same deterministic grid-search threshold routine as \code{DPTS}.
+#'Use \code{grid_search_type = "jointly"} for the full multi-dimensional grid or \code{grid_search_type = "sequential"} for stepwise threshold addition.
+#'For multiple thresholds, \code{grid_search_iter} adds coordinate-refinement cycles after the initial grid search; set it to \code{0} to skip refinement.
 #'
 #'It is worthy noting that the test shrinks to the so-called threshold existence test when \code{Th} = 1.
 #'
@@ -71,6 +80,11 @@
 #'#bt = 50, iterations = 500)
 #'#test0
 #'
+#'# Grid-search version of the threshold existence test
+#'#test0_grid <- Threshold_Test(y~x,y~z,data = d1, index = c('id','year'), q = d1$q,
+#'#Th = 1, bt = 50, grid_search = TRUE, grids = 100)
+#'#test0_grid
+#'
 #'# H0: one threshold 
 #'#test1 <- Threshold_Test(y~x,y~z,data = d1, index = c('id','year'), q = d1$q, Th = 2,
 #'#bt = 50, iterations = 500)
@@ -88,7 +102,11 @@
 Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL,Th = 1
                            ,q,timeFE = FALSE, bt = 100,NoY = FALSE,y1 = NULL,
                            iterations = 2000,sro = 0.1,r0x = NULL,r1x = NULL,
-                           parallel = TRUE, seed = NULL,...){
+                           grid_search = FALSE,grids = 100,
+                           grid_search_type = c("jointly","sequential"),
+                           grid_search_iter = 1,parallel = TRUE,seed = NULL,...){
+  
+  grid_search_type <- match.arg(grid_search_type)
   
   cat("\n","Test for the number of Thresholds","\n")
   cat(" It is noted that when under H0 the number of Thresholds is 0, this test is the so called threshold existence test.","\n")
@@ -109,7 +127,7 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
     
     set.seed(seed)
     m0 <- DPML0(formula = formula,formula_cv = formula_cv,data = data,
-                index = index,timeFE = timeFE,y1 = y1,...)
+                index = index,timeFE = timeFE,y1 = y1,MDE = TRUE, ...)
     
   }else{
     
@@ -117,7 +135,10 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
     m0 <- DPTS(formula = formula,formula_cv = formula_cv,data = data,
                index = index,Th = Th - 1,q = q,timeFE = timeFE,
                NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-               r0x = r0x,r1x = r1x,...)
+               r0x = r0x,r1x = r1x,grid_search = grid_search,
+               grids = grids,grid_search_type = grid_search_type,
+               grid_search_iter = grid_search_iter,
+               MDE = TRUE,...)
     
   }
   
@@ -133,7 +154,10 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
   m1 <- DPTS(formula = formula,formula_cv = formula_cv,data = data,
              index = index,Th = Th,q = q,timeFE = timeFE,
              NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-             r0x = r0x,r1x = r1x,...)
+             r0x = r0x,r1x = r1x,grid_search = grid_search,
+             grids = grids,grid_search_type = grid_search_type,
+             grid_search_iter = grid_search_iter,
+             MDE = TRUE,...)
   
   m1s <- as.vector(m1$NNLL)
   
@@ -151,7 +175,7 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
       
       set.seed(bt.seed[j])
       m0b <- suppressMessages(try(DPML0(formula = formula,formula_cv = formula_cv,data = data,
-                                        index = index,timeFE = timeFE,y1 = y1,delty0=dyb,...),silent = TRUE))
+                                        index = index,timeFE = timeFE,y1 = y1,delty0=dyb,MDE = TRUE,...),silent = TRUE))
       
       
     }else{
@@ -160,7 +184,10 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
       m0b <- suppressMessages(try(DPTS(formula = formula,formula_cv = formula_cv,data = data,
                                        index = index,Th = Th - 1,q = q,timeFE = timeFE,
                                        NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-                                       r0x = r0x,r1x = r1x,delty0=dyb,...),silent = TRUE))
+                                       r0x = r0x,r1x = r1x,grid_search = grid_search,
+                                       grids = grids,grid_search_type = grid_search_type,
+                                       grid_search_iter = grid_search_iter,
+                                       delty0=dyb,MDE = TRUE,...),silent = TRUE))
       
       
     }
@@ -169,38 +196,53 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
     m1b <- suppressMessages(try(DPTS(formula = formula,formula_cv = formula_cv,data = data,
                                      index = index,Th = Th,q = q,timeFE = timeFE,
                                      NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-                                     r0x = r0x,r1x = r1x,delty0=dyb,...),silent = TRUE))
+                                     r0x = r0x,r1x = r1x,grid_search = grid_search,
+                                     grids = grids,grid_search_type = grid_search_type,
+                                     grid_search_iter = grid_search_iter,
+                                     delty0=dyb,MDE = TRUE,...),silent = TRUE))
     
+    attempt <- 1
     while("try-error" %in% class(m0b) | "try-error" %in% class(m1b)){
+      attempt <- attempt + 1
+      if(attempt > 50){
+        stop("Bootstrap replication failed after 50 attempts.")
+      }
       
-      set.seed(bt.seed[j]+1)
+      retry_seed <- bt.seed[j] + attempt
+      set.seed(retry_seed)
       cy = sample(1:nn,nn,replace = TRUE)
       dub = du[,cy]
       dyb = matrix(dfit + dub,ncol = 1)
       
       if(Th == 1){
         
-        set.seed(bt.seed[j])
+        set.seed(retry_seed)
         m0b <- suppressMessages(try(DPML0(formula = formula,formula_cv = formula_cv,data = data,
-                                          index = index,timeFE = timeFE,y1 = y1,delty0=dyb,...),silent = TRUE))
+                                          index = index,timeFE = timeFE,y1 = y1,delty0=dyb,MDE = TRUE,...),silent = TRUE))
         
         
       }else{
         
-        set.seed(bt.seed[j])
+        set.seed(retry_seed)
         m0b <- suppressMessages(try(DPTS(formula = formula,formula_cv = formula_cv,data = data,
                                          index = index,Th = Th - 1,q = q,timeFE = timeFE,
                                          NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-                                         r0x = r0x,r1x = r1x,delty0=dyb,...),silent = TRUE))
+                                         r0x = r0x,r1x = r1x,grid_search = grid_search,
+                                         grids = grids,grid_search_type = grid_search_type,
+                                         grid_search_iter = grid_search_iter,
+                                         delty0=dyb,MDE = TRUE,...),silent = TRUE))
         
         
       }
       
-      set.seed(bt.seed[j])
+      set.seed(retry_seed)
       m1b <- suppressMessages(try(DPTS(formula = formula,formula_cv = formula_cv,data = data,
                                        index = index,Th = Th,q = q,timeFE = timeFE,
                                        NoY = NoY,y1 = y1,iterations = iterations,sro = sro,
-                                       r0x = r0x,r1x = r1x,delty0=dyb,...),silent = TRUE))
+                                       r0x = r0x,r1x = r1x,grid_search = grid_search,
+                                       grids = grids,grid_search_type = grid_search_type,
+                                       grid_search_iter = grid_search_iter,
+                                       delty0=dyb,MDE = TRUE,...),silent = TRUE))
       
     }
     
@@ -230,6 +272,7 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
     parabar::set_option("progress_track", TRUE)
     cores_number <- parallel::detectCores()
     backend <- parabar::start_backend(cores = cores_number, cluster_type = "psock", backend_type = "async")
+    on.exit(try(parabar::stop_backend(backend),silent = TRUE),add = TRUE)
     
     parabar::configure_bar(type = "basic", style = 3)
     
@@ -238,7 +281,7 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
       return(bt_p)
     })
     
-    stop_backend(backend)
+    try(parabar::stop_backend(backend),silent = TRUE)
   }
   
   
@@ -263,4 +306,3 @@ Threshold_Test <- function(formula = NULL, formula_cv = NULL, data, index = NULL
   
   return(my_test)
 }
-

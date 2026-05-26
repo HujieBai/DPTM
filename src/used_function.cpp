@@ -33,7 +33,7 @@ Eigen::MatrixXd lag_transform(Eigen::MatrixXd objs, int t, int n, int lag,
 
 // [[Rcpp::export]]
 double three_two(Eigen::VectorXd &pars1,Eigen::MatrixXd &delty0,
-                 Eigen::MatrixXd &evs,Eigen::MatrixXd &omega, int &cd, int &tt, int &nn){
+                 Eigen::MatrixXd &evs,Eigen::MatrixXd &omega, int &cd, int &tt, int &nn, bool &MDE){
   double likely_function_value,ww,tn,p3,p2,p20,nb,sg,p1;
   Eigen::MatrixXd omega0(tt-1,tt-1),osolve(tt-1,tt-1),xn(tt-1,1),yn(tt-1,1),fits(tt-1,1),
   betas(cd-2,1),pp(1,1);
@@ -69,6 +69,10 @@ double three_two(Eigen::VectorXd &pars1,Eigen::MatrixXd &delty0,
     p20 = (1 + (tn-1)*(ww-1))*pow(sg,(tt-1));
     p2 = nb*log(p20);
     likely_function_value = 0.5*(p1+p2+p3);
+    
+    if(MDE == TRUE){
+      likely_function_value = p3;
+    }
     if(likely_function_value<0){
       likely_function_value = numeric_limits<double>::infinity();
     }

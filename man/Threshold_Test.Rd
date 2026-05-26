@@ -5,7 +5,9 @@
 \usage{
 Threshold_Test(formula = NULL, formula_cv = NULL, data, index=NULL, Th = 1, q, 
 timeFE = FALSE, bt = 100,NoY = FALSE, y1 = NULL, iterations = 2000, sro = 0.1,
-r0x = NULL, r1x = NULL, parallel=TRUE, seed = NULL,...)
+r0x = NULL, r1x = NULL, grid_search = FALSE, grids = 100,
+grid_search_type = c("jointly", "sequential"), grid_search_iter = 1,
+parallel=TRUE, seed = NULL,...)
 }
 \arguments{
 \item{formula}{formula of the covariates with threshold effects; If a setting is not provided, defaults (no covariates with threshold effects) will be used. Defaults to `NULL`.}
@@ -33,6 +35,14 @@ r0x = NULL, r1x = NULL, parallel=TRUE, seed = NULL,...)
 \item{r0x}{lower bound of threshold parameter space; If a setting is not provided, defaults (15\% quantile of threshold variable) will be used.}
 
 \item{r1x}{upper bound of threshold parameter space; If a setting is not provided, defaults (85\% quantile of threshold variable) will be used.}
+
+\item{grid_search}{logicals. If TRUE, thresholds in \code{DPTS} calls are searched by deterministic grid search instead of MCMC. Defaults to `FALSE`.}
+
+\item{grids}{number of grid points (threshold vectors) searched when \code{grid_search = TRUE}. Defaults to `100`.}
+
+\item{grid_search_type}{type of grid search for multiple thresholds. \code{"jointly"} searches the full Cartesian grid (\code{grids^Th}); \code{"sequential"} adds thresholds one at a time (\code{grids * Th}). Defaults to \code{"jointly"}.}
+
+\item{grid_search_iter}{number of coordinate-refinement cycles after the initial grid search when \code{grid_search = TRUE}. Defaults to \code{1}.}
 
 \item{parallel}{logicals. If TRUE test will run in parallel for saving time. Defaults to `TRUE`.}
 
@@ -74,6 +84,9 @@ In other words, p-values of the first test (\code{Th} = 1) and the second test (
 \code{bt} is the number of bootstrap (by default is 100);
 \code{parallel} can allow user to run test in parallel to save time;
 \code{seed} is used to guarantee the replication of tests.
+When \code{grid_search = TRUE}, the null and alternative threshold models in the test use the same deterministic grid-search threshold routine as \code{DPTS}.
+Use \code{grid_search_type = "jointly"} for the full multi-dimensional grid or \code{grid_search_type = "sequential"} for stepwise threshold addition.
+For multiple thresholds, \code{grid_search_iter} adds coordinate-refinement cycles after the initial grid search; set it to \code{0} to skip refinement.
 
 It is worthy noting that the test shrinks to the so-called threshold existence test when \code{Th} = 1.
 }
@@ -87,6 +100,11 @@ It is worthy noting that the test shrinks to the so-called threshold existence t
 #test0 <- Threshold_Test(y~x,y~z,data = d1, index = c('id','year'), q = d1$q, Th = 1,
 #bt = 50, iterations = 500)
 #test0
+
+# Grid-search version of the threshold existence test
+#test0_grid <- Threshold_Test(y~x,y~z,data = d1, index = c('id','year'), q = d1$q,
+#Th = 1, bt = 50, grid_search = TRUE, grids = 100)
+#test0_grid
 
 # H0: one threshold 
 #test1 <- Threshold_Test(y~x,y~z,data = d1, index = c('id','year'), q = d1$q, Th = 2,

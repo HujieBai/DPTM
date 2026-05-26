@@ -38,8 +38,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // three_two
-double three_two(Eigen::VectorXd& pars1, Eigen::MatrixXd& delty0, Eigen::MatrixXd& evs, Eigen::MatrixXd& omega, int& cd, int& tt, int& nn);
-RcppExport SEXP _DPTM_three_two(SEXP pars1SEXP, SEXP delty0SEXP, SEXP evsSEXP, SEXP omegaSEXP, SEXP cdSEXP, SEXP ttSEXP, SEXP nnSEXP) {
+double three_two(Eigen::VectorXd& pars1, Eigen::MatrixXd& delty0, Eigen::MatrixXd& evs, Eigen::MatrixXd& omega, int& cd, int& tt, int& nn, bool& MDE);
+RcppExport SEXP _DPTM_three_two(SEXP pars1SEXP, SEXP delty0SEXP, SEXP evsSEXP, SEXP omegaSEXP, SEXP cdSEXP, SEXP ttSEXP, SEXP nnSEXP, SEXP MDESEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -50,7 +50,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int& >::type cd(cdSEXP);
     Rcpp::traits::input_parameter< int& >::type tt(ttSEXP);
     Rcpp::traits::input_parameter< int& >::type nn(nnSEXP);
-    rcpp_result_gen = Rcpp::wrap(three_two(pars1, delty0, evs, omega, cd, tt, nn));
+    Rcpp::traits::input_parameter< bool& >::type MDE(MDESEXP);
+    rcpp_result_gen = Rcpp::wrap(three_two(pars1, delty0, evs, omega, cd, tt, nn, MDE));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -58,7 +59,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_DPTM_inverse_cpp", (DL_FUNC) &_DPTM_inverse_cpp, 1},
     {"_DPTM_lag_transform", (DL_FUNC) &_DPTM_lag_transform, 5},
-    {"_DPTM_three_two", (DL_FUNC) &_DPTM_three_two, 7},
+    {"_DPTM_three_two", (DL_FUNC) &_DPTM_three_two, 8},
     {NULL, NULL, 0}
 };
 

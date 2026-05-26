@@ -3,7 +3,7 @@
 #'@keywords internal
 #'
 #'@description
-#'Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
+#'Use a MCMC-MLE or grid-search-MLE based two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
 #'
 #'
 #'@format [R6::R6Class] object.
@@ -29,6 +29,16 @@ DPTM <- R6::R6Class(
     Th = NULL,
     #'@field thresholds a named vector of thresholds
     thresholds = NULL,
+    #'@field threshold_search threshold search method
+    threshold_search = NULL,
+    #'@field grid_points number of grid points used by deterministic threshold search
+    grid_points = NULL,
+    #'@field grid_search_type deterministic grid-search type
+    grid_search_type = NULL,
+    #'@field grid_search_iter coordinate-refinement iterations after deterministic grid search
+    grid_search_iter = NULL,
+    #'@field grid_results threshold candidates and objective values from grid search
+    grid_results = NULL,
     
     #'@description
     #'initialize Initializing method
@@ -42,9 +52,11 @@ DPTM <- R6::R6Class(
     #'@param iterlim the maximum number of iterations; If a setting is not provided, defaults (iterlim = 500) will be used
     #'@param restart logicals. If MLE fails, set it as TRUE
     #'@param delty0 a vector of dependent variable after difference
+    #'@param MDE Minimum distance estimator.
+    #'@param ... optional arguments accepted by high-level wrappers
     initialize = function(data,index = NULL,Th = NULL, iterations = NULL,
                           sro = NULL,w = NULL,var_u = NULL,iterlim = NULL,
-                          restart = FALSE,delty0 = NULL) {
+                          restart = FALSE,delty0 = NULL,MDE = NULL,...) {
       private$xtset_b(data=data,index=index)
       
       if(!is.null(Th)){
@@ -52,6 +64,10 @@ DPTM <- R6::R6Class(
           stop("Check the input Th.")
         }
         self$Th <- as.integer(Th)
+      }
+      
+      if(!is.null(MDE)){
+        private$MDE = isTRUE(MDE)
       }
       
       if(!is.null(iterations)){
@@ -78,9 +94,7 @@ DPTM <- R6::R6Class(
         private$iterlim <- iterlim
       }
       
-      if(!isTRUE(restart)){
-        private$restart <- restart
-      }
+      private$restart <- isTRUE(restart)
       
       
     },
@@ -312,7 +326,7 @@ DPTM <- R6::R6Class(
       pars <- c(pars,what)
       cd = length(pars)
       
-      result_in <- suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,
+      result_in <- suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,MDE = private$MDE,
                                                    omega=private$omega,cd=cd,tt=private$tt,nn=private$nn,iterlim = private$iterlim)
                                         ,silent = TRUE))
       if("try-error" %in% class(result_in)){
@@ -323,7 +337,7 @@ DPTM <- R6::R6Class(
           pars[cd-1] = runif(1,2,5)
           pars[cd] = pars[cd-1]/varv1
           
-          result_in = suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,
+          result_in = suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,MDE = private$MDE,
                                                       omega=private$omega,cd=cd,tt=private$tt,nn=private$nn,iterlim = private$iterlim)
                                            ,silent = TRUE))
         }else{
@@ -340,7 +354,7 @@ DPTM <- R6::R6Class(
         pars[cd-1] = runif(1,2,5)
         pars[cd] = pars[cd-1]/varv1
         
-        result_in = suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,
+        result_in = suppressWarnings(try(stats::nlm(three_two,pars,delty0=delty0,evs=deltxx,MDE = private$MDE,
                                                     omega=private$omega,cd=cd,tt=private$tt,nn=private$nn,iterlim = private$iterlim)
                                          ,silent = TRUE))
         
@@ -406,31 +420,9 @@ DPTM <- R6::R6Class(
     #'@param ga thresholds
     TModel_fit = function(ga){
       
-      rts <- matrix(private$q,nrow = private$nn*private$tt,ncol = (self$Th)) - matrix(ga,nrow  = private$nn*private$tt,ncol = self$Th,byrow = TRUE)
-      rts[which(rts>0,arr.ind = TRUE)] <- 1
-      rts[which(rts<=0,arr.ind = TRUE)] <- 0
-      rts0 <- cbind(rep(1,private$nn*private$tt),rts)
-      
-      for (i in 1:(ncol(rts0)-1)) {
-        rts0[,i] <- rts0[,i] - rts0[,i+1]
-      }
-      
-      xxx <- NULL
-      rts0x <- NULL
-      if(!is.null(private$xx)){
-        
-        for (i in 1:(ncol(private$xx)/private$ny)) {
-          rts0x <- cbind(rts0x,rts0)
-        }
-        xxx = private$xx*rts0x
-      }
-      
-      xxx <- cbind(xxx,private$cvs)
-      
-      if(is.null(private$yy_1)){
-        xxx <- cbind(private$y1,xxx)
-      }else{
-        xxx <- cbind(private$yy_1*rts0,xxx)
+      xxx <- private$threshold_design(ga)
+      if(is.null(xxx)){
+        stop("The supplied thresholds are not admissible. Check ordering, regime size, and collinearity.")
       }
       
       private$x <- xxx
@@ -455,7 +447,7 @@ DPTM <- R6::R6Class(
       if(types == "Metropolis"){
         settings = list(iterations = private$iterations,
                         burnin=ceiling(proportion*private$iterations),
-                        adapt = ADs,adaptationNotBefore = private$iterations, nCR = nCR,...)
+                        adapt = ADs,adaptationNotBefore = private$iterations,...)
       }else{
         settings = list(iterations = private$iterations,
                         burnin=ceiling(proportion*private$iterations), nCR = nCR,...)
@@ -473,8 +465,95 @@ DPTM <- R6::R6Class(
       names(self$thresholds) <- paste("Threshold",1:length(self$thresholds))
       
       self$NNLL = -mres[[2]][2]
+      self$threshold_search <- "MCMC"
+      self$grid_points <- NULL
+      self$grid_search_type <- NULL
+      self$grid_search_iter <- NULL
+      self$grid_results <- NULL
       invisible(self)
       
+    },
+    
+    #'@description
+    #'Estimate unknown thresholds with a deterministic grid search
+    #'@param grids number of threshold vectors to evaluate
+    #'@param grid_search_type grid-search type: jointly or sequential
+    #'@param fixed_thresholds previously selected thresholds used by sequential search
+    #'@param grid_search_iter coordinate-refinement iterations after the initial grid search
+    grid_search_threshold = function(grids = 100,
+                                     grid_search_type = c("jointly","sequential"),
+                                     fixed_thresholds = NULL,
+                                     grid_search_iter = 1){
+      
+      grid_search_type <- match.arg(grid_search_type)
+      grid_search_iter <- private$validate_grid_search_iter(grid_search_iter)
+      candidates <- if(identical(grid_search_type,"jointly") | self$Th == 1){
+        private$threshold_grid_jointly(grids)
+      }else{
+        private$threshold_grid_sequential(grids,fixed_thresholds)
+      }
+      grid_fit <- private$evaluate_threshold_grid(candidates)
+      values <- grid_fit$values
+      best <- grid_fit$best
+      self$thresholds <- as.numeric(candidates[best,,drop = TRUE])
+      names(self$thresholds) <- paste("Threshold",1:length(self$thresholds))
+      self$NNLL <- values[best]
+      self$threshold_search <- "grid"
+      self$grid_points <- nrow(candidates)
+      self$grid_search_type <- grid_search_type
+      self$grid_search_iter <- 0
+      self$grid_results <- data.frame(candidates,NNLL = values)
+      
+      self$grid_refine_thresholds(grids = grids,grid_search_iter = grid_search_iter)
+      
+      self$TModel_fit(self$thresholds)
+      invisible(self)
+      
+    },
+    
+    #'@description
+    #'Refine threshold estimates by iteratively re-estimating one threshold at a time
+    #'@param grids number of grid points used for each conditional threshold search
+    #'@param grid_search_iter number of coordinate-refinement cycles
+    #'@param initial_thresholds starting thresholds; defaults to current estimates
+    grid_refine_thresholds = function(grids = 100,
+                                      grid_search_iter = 1,
+                                      initial_thresholds = NULL){
+      grid_search_iter <- private$validate_grid_search_iter(grid_search_iter)
+      self$grid_search_iter <- grid_search_iter
+      
+      if(is.null(initial_thresholds)){
+        initial_thresholds <- self$thresholds
+      }
+      
+      if(is.null(self$Th) | self$Th <= 1 | grid_search_iter == 0){
+        return(invisible(self))
+      }
+      
+      refine <- private$threshold_grid_iterative(grids = grids,
+                                                 initial_thresholds = initial_thresholds,
+                                                 grid_search_iter = grid_search_iter)
+      self$thresholds <- refine$thresholds
+      names(self$thresholds) <- paste("Threshold",seq_len(length(self$thresholds)))
+      self$NNLL <- refine$NNLL
+      self$grid_points <- if(is.null(self$grid_points)){
+        refine$grid_points
+      }else{
+        self$grid_points + refine$grid_points
+      }
+      
+      if(length(refine$grid_results) > 0){
+        if(is.null(self$grid_results)){
+          self$grid_results <- refine$grid_results
+        }else if(is.data.frame(self$grid_results)){
+          self$grid_results <- c(list(Initial = self$grid_results),refine$grid_results)
+        }else{
+          self$grid_results <- c(self$grid_results,refine$grid_results)
+        }
+      }
+      
+      self$TModel_fit(self$thresholds)
+      invisible(self)
     },
     
     #'@description
@@ -528,35 +607,21 @@ DPTM <- R6::R6Class(
         cat(" Non-Negative log-likelihood:",self$NNLL,".\n")
         
       }else{
-        IC = matrix(0,3,self$Th*2)
-        
-        colnames(IC) <- rep(c("Lower","Upper"),self$Th)
-        rownames(IC) <- c("90%","95%","99%")
-        
-        
-        for (i in 1:self$Th) {
-          IC[1,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.05),stats::quantile(private$MCMC_sample[,i],0.95)),3)
-          IC[2,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.025),stats::quantile(private$MCMC_sample[,i],0.975)),3)
-          IC[3,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.005),stats::quantile(private$MCMC_sample[,i],0.995)),3)
-          
-        }
-        
-        chain <- private$chains$chain
-        for (i in 1:length(chain)) {
-          chain[[i]] <- chain[[i]][,1:self$Th]
-        }
-        MCMC_Convergence_Diagnostic <- try(coda::gelman.diag(chain,autoburnin=TRUE))
-        if("try-error" %in% class(MCMC_Convergence_Diagnostic)){
-          MCMC_Convergence_Diagnostic <- coda::gelman.diag(chain, autoburnin= FALSE)
-        }
+        search_method <- ifelse(is.null(self$threshold_search),"MCMC",self$threshold_search)
         
         cat("\n","This is a Dynamic panel multiple threshold model with fixed effects.","\n")
         cat("---------------------------------------------------","\n")
         cat(" The number of thresholds is",self$Th,".\n")
+        cat(" Threshold search method:",search_method,".\n")
+        if(identical(search_method,"grid")){
+          cat(" Grid search type:",self$grid_search_type,".\n")
+          cat(" Grid points searched:",self$grid_points,".\n")
+          if(!is.null(self$grid_search_iter)){
+            cat(" Grid refinement iterations:",self$grid_search_iter,".\n")
+          }
+        }
         cat(" The thresholds are","\n")
         print(self$thresholds)
-        cat(" The CIs of thresholds are ","\n")
-        print(IC)
         cat("\n","The coefficients are ","\n")
         print(jgs)
         
@@ -565,9 +630,37 @@ DPTM <- R6::R6Class(
         cat(" Time Fixed Effects:",private$TFE,".\n")
         cat(" Non-Negative log-likelihood:",self$NNLL,".\n")
         
-        cat("\n"," The Gelman-Rubin Convergence Diagnostic is ","\n")
-        print(MCMC_Convergence_Diagnostic)
-        plot(private$chains)
+        if(identical(search_method,"MCMC") && !is.null(private$MCMC_sample)){
+          IC = matrix(0,3,self$Th*2)
+          
+          colnames(IC) <- rep(c("Lower","Upper"),self$Th)
+          rownames(IC) <- c("90%","95%","99%")
+          
+          
+          for (i in 1:self$Th) {
+            IC[1,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.05),stats::quantile(private$MCMC_sample[,i],0.95)),3)
+            IC[2,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.025),stats::quantile(private$MCMC_sample[,i],0.975)),3)
+            IC[3,(2*i-1):(2*i)] = round(c(stats::quantile(private$MCMC_sample[,i],0.005),stats::quantile(private$MCMC_sample[,i],0.995)),3)
+            
+          }
+          
+          chain <- private$chains$chain
+          for (i in 1:length(chain)) {
+            chain[[i]] <- chain[[i]][,1:self$Th]
+          }
+          MCMC_Convergence_Diagnostic <- try(coda::gelman.diag(chain,autoburnin=TRUE))
+          if("try-error" %in% class(MCMC_Convergence_Diagnostic)){
+            MCMC_Convergence_Diagnostic <- coda::gelman.diag(chain, autoburnin= FALSE)
+          }
+          
+          cat(" The CIs of thresholds are ","\n")
+          print(IC)
+          cat("\n"," The Gelman-Rubin Convergence Diagnostic is ","\n")
+          print(MCMC_Convergence_Diagnostic)
+          plot(private$chains)
+        }else{
+          cat("\n"," Threshold CIs and Gelman-Rubin diagnostics are only available for MCMC search.","\n")
+        }
         
       }
       
@@ -608,58 +701,175 @@ DPTM <- R6::R6Class(
     sro = 0.1,
     MCMC_sample = NULL,
     chains = NULL,
-    
-    msx = function(ga){
-      if(all(ga == sort(ga))){
-        
-        rts <- matrix(private$q,nrow = private$nn*private$tt,ncol = (self$Th)) - matrix(ga,nrow  = private$nn*private$tt,ncol = self$Th,byrow = TRUE)
-        rts[which(rts>0,arr.ind = TRUE)] <- 1
-        rts[which(rts<=0,arr.ind = TRUE)] <- 0
-        rts0 <- cbind(rep(1,private$nn*private$tt),rts)
-        
-        for (i in 1:(ncol(rts0)-1)) {
-          rts0[,i] <- rts0[,i] - rts0[,i+1]
-        }
-        
-        if(any(colSums(rts0) < private$sro*(private$tt*private$nn))){
-          sse0 = private$ssemin0
-        }else{
-          
-          xxx <- NULL
-          rts0x <- NULL
-          if(!is.null(private$xx)){
-            
-            for (i in 1:(ncol(private$xx)/private$ny)) {
-              rts0x <- cbind(rts0x,rts0)
-            }
-            xxx = private$xx*rts0x
-          }
-          
-          xxx <- cbind(xxx,private$cvs)
-          
-          if(is.null(private$yy_1)){
-            xxx <- cbind(private$y1,xxx)
-          }else{
-            xxx <- cbind(private$yy_1*rts0,xxx)
-          }
-          
-          if(qr(xxx)$rank != ncol(xxx)){
-            sse0 <- private$ssemin0
-          }else{
-            
-            private$x <- xxx
-            
-            self$MLE(ny=private$ny)
-            
-            sse0 <- self$NNLL
-            
-          }
-        }
-      }else{
-        sse0 = private$ssemin0
+    MDE = FALSE,
+    threshold_design = function(ga){
+      ga <- as.numeric(ga)
+      if(length(ga) != self$Th | any(!is.finite(ga)) | !all(ga == sort(ga))){
+        return(NULL)
       }
       
-      return(sse0)
+      nobs <- private$nn*private$tt
+      rts <- matrix(private$q,nrow = nobs,ncol = self$Th) -
+        matrix(ga,nrow = nobs,ncol = self$Th,byrow = TRUE)
+      rts <- (rts > 0) * 1
+      rts0 <- cbind(rep(1,nobs),rts)
+      
+      for (i in 1:(ncol(rts0)-1)) {
+        rts0[,i] <- rts0[,i] - rts0[,i+1]
+      }
+      
+      if(any(colSums(rts0) < private$sro*nobs)){
+        return(NULL)
+      }
+      
+      xxx <- NULL
+      rts0x <- NULL
+      if(!is.null(private$xx)){
+        
+        for (i in 1:(ncol(private$xx)/private$ny)) {
+          rts0x <- cbind(rts0x,rts0)
+        }
+        xxx = private$xx*rts0x
+      }
+      
+      xxx <- cbind(xxx,private$cvs)
+      
+      if(is.null(private$yy_1)){
+        xxx <- cbind(private$y1,xxx)
+      }else{
+        xxx <- cbind(private$yy_1*rts0,xxx)
+      }
+      
+      if(qr(xxx)$rank != ncol(xxx)){
+        return(NULL)
+      }
+      
+      xxx
+    },
+    
+    fit_threshold = function(ga,invalid = private$ssemin0){
+      xxx <- private$threshold_design(ga)
+      if(is.null(xxx)){
+        return(invalid)
+      }
+      
+      private$x <- xxx
+      self$MLE(ny=private$ny)
+      self$NNLL
+    },
+    
+    validate_grid_search_iter = function(grid_search_iter){
+      grid_search_iter <- as.integer(grid_search_iter[1])
+      if(is.na(grid_search_iter) | grid_search_iter < 0){
+        stop("grid_search_iter must be a non-negative integer.")
+      }
+      grid_search_iter
+    },
+    
+    evaluate_threshold_grid = function(candidates){
+      values <- rep(Inf,length.out = nrow(candidates))
+      
+      for (i in seq_len(nrow(candidates))) {
+        fit <- try(private$fit_threshold(candidates[i,],invalid = Inf),silent = TRUE)
+        if(!("try-error" %in% class(fit)) && is.finite(fit)){
+          values[i] <- fit
+        }
+      }
+      
+      if(all(!is.finite(values))){
+        stop("No admissible threshold was found in the grid.")
+      }
+      
+      list(values = values,best = which.min(values))
+    },
+    
+    threshold_grid_base = function(grids){
+      if(is.null(self$Th)){
+        stop("Threshold grid search requires a threshold model.")
+      }
+      if(is.null(private$q)){
+        stop("Threshold variable q is required for grid search.")
+      }
+      if(is.null(private$r0) | is.null(private$r1)){
+        stop("Threshold bounds are missing.")
+      }
+      
+      grids <- as.integer(grids[1])
+      if(is.na(grids) | grids < 1){
+        stop("grids must be a positive integer.")
+      }
+      
+      as.numeric(seq(private$r0,private$r1,length.out = grids))
+    },
+    
+    threshold_grid_jointly = function(grids){
+      base_grid <- private$threshold_grid_base(grids)
+      candidates <- expand.grid(rep(list(base_grid),self$Th))
+      candidates <- as.matrix(candidates)
+      if(self$Th == 1){
+        candidates <- matrix(candidates,ncol = 1)
+      }
+      
+      colnames(candidates) <- paste("Threshold",seq_len(self$Th))
+      candidates
+    },
+    
+    threshold_grid_sequential = function(grids,fixed_thresholds = NULL){
+      fixed_thresholds <- sort(as.numeric(fixed_thresholds))
+      fixed_thresholds <- fixed_thresholds[is.finite(fixed_thresholds)]
+      
+      if(length(fixed_thresholds) != self$Th - 1){
+        stop("Sequential grid search requires exactly Th - 1 fixed thresholds.")
+      }
+      
+      base_grid <- private$threshold_grid_base(grids)
+      candidates <- t(vapply(base_grid,function(gamma){
+        sort(c(fixed_thresholds,gamma))
+      },numeric(self$Th)))
+      colnames(candidates) <- paste("Threshold",seq_len(self$Th))
+      candidates
+    },
+    
+    threshold_grid_iterative = function(grids,initial_thresholds,grid_search_iter){
+      current <- sort(as.numeric(initial_thresholds))
+      current <- current[is.finite(current)]
+      
+      if(length(current) != self$Th){
+        stop("Iterative grid refinement requires exactly Th initial thresholds.")
+      }
+      
+      current_value <- private$fit_threshold(current,invalid = Inf)
+      if(!is.finite(current_value)){
+        stop("Initial thresholds are not admissible for iterative grid refinement.")
+      }
+      
+      grid_results <- list()
+      grid_points <- 0
+      
+      for (iter_i in seq_len(grid_search_iter)) {
+        for (th_i in seq_len(self$Th)) {
+          fixed_thresholds <- current[-th_i]
+          candidates <- private$threshold_grid_sequential(grids,fixed_thresholds)
+          grid_fit <- private$evaluate_threshold_grid(candidates)
+          values <- grid_fit$values
+          best <- grid_fit$best
+          
+          stage_name <- paste0("Iteration_",iter_i,"_Threshold_",th_i)
+          grid_results[[stage_name]] <- data.frame(candidates,NNLL = values)
+          grid_points <- grid_points + nrow(candidates)
+          current <- sort(as.numeric(candidates[best,,drop = TRUE]))
+          current_value <- values[best]
+        }
+      }
+      
+      list(thresholds = current,
+           NNLL = current_value,
+           grid_points = grid_points,
+           grid_results = grid_results)
+    },
+    
+    msx = function(ga){
+      private$fit_threshold(ga,invalid = private$ssemin0)
     },
     
     pf = function(ga){

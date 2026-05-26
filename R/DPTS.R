@@ -1,7 +1,7 @@
 #'@title Dynamic panel multiple threshold model with fixed effects.
 #'
 #'@description
-#'Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
+#'Use a MCMC-MLE or grid-search-MLE based two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
 #'
 #'@param formula formula of the covariates with threshold effects; If a setting is not provided, defaults (no covariates with threshold effects) will be used. Defaults to `NULL`.
 #'@param formula_cv formula of the covariates without threshold effects; If a setting is not provided, defaults (no covariates without threshold effects) will be used. Defaults to `NULL`.
@@ -16,11 +16,17 @@
 #'@param sro regime (subsample) proportion; If a setting is not provided, defaults (10\%) will be used. Defaults to `0.1`.
 #'@param r0x lower bound of threshold parameter space; If a setting is not provided, defaults (15\% quantile of threshold variable) will be used.
 #'@param r1x upper bound of threshold parameter space; If a setting is not provided, defaults (85\% quantile of threshold variable) will be used.
+#'@param grid_search logicals. If TRUE, thresholds are searched by deterministic grid search instead of MCMC. Defaults to `FALSE`.
+#'@param grids number of grid points (threshold vectors) searched when \code{grid_search = TRUE}. Defaults to `100`.
+#'@param grid_search_type type of grid search for multiple thresholds. \code{"jointly"} searches the full Cartesian grid (\code{grids^Th}); \code{"sequential"} adds thresholds one at a time (\code{grids * Th}). Defaults to \code{"jointly"}.
+#'@param grid_search_iter number of coordinate-refinement cycles after the initial grid search when \code{grid_search = TRUE}. For two thresholds, one cycle re-estimates the first threshold conditional on the second and then re-estimates the second conditional on the first. Set to \code{0} to skip this refinement. Defaults to \code{1}.
 #'@param ... additional arguments to be passed to the settings of MCMC (see BayesianTools::applySettingsDefault)
 #'
 #'
 #'@usage DPTS(formula, formula_cv, data, index=NULL, Th = 1, q, timeFE = FALSE, 
 #'NoY = FALSE, y1 = NULL, iterations = 2000, sro = 0.1, r0x = NULL, r1x = NULL,
+#'grid_search = FALSE, grids = 100, grid_search_type = c("jointly", "sequential"),
+#'grid_search_iter = 1,
 #'...)
 #'
 #'## S6 method for class 'DPTM' 
@@ -60,6 +66,12 @@
 #'If user wants to use other MCMC, can use \code{...} (see BayesianTools::applySettingsDefault).
 #'As for the length of iterations, it can be set by \code{iterations} (50\% used for burnining) and default length is 2000.
 #'The trace plot and the Gelman and Rubin's convergence diagnostic are supplied by \code{DPTS} (\code{print}) to test the convergence of MCMC sample.
+#'Alternatively, set \code{grid_search = TRUE} to use deterministic grid search for the unknown thresholds.
+#'In that case, \code{grids} controls the number of threshold vectors evaluated; for example, \code{grids = 100} searches 100 candidate points in the ordered threshold-parameter space.
+#'For \code{Th} > 1 and \code{grid_search_type = "jointly"}, the full Cartesian grid is searched, so \code{Th = 2} and \code{grids = 100} evaluates \code{100 * 100} candidate threshold pairs.
+#'For \code{grid_search_type = "sequential"}, thresholds are added one at a time, so \code{Th = 2} and \code{grids = 100} evaluates about \code{200} candidates in total.
+#'When \code{Th > 1}, \code{grid_search_iter} controls an additional coordinate-refinement step after the initial grid search. With two thresholds and \code{grid_search_iter = 1}, \code{DPTS} re-estimates the first threshold conditional on the second, then re-estimates the second conditional on the first, and sorts the final threshold estimates.
+#'Grid search does not produce MCMC threshold confidence intervals or Gelman-Rubin diagnostics.
 #'
 #'
 #'Additionally, we assume the exogenous regressor \eqn{x} is weakly exogenous, and 
@@ -90,6 +102,10 @@
 #'\item{covariance_matrix}{a covariance matrix}
 #'\item{Th}{the number of thresholds}
 #'\item{thresholds}{a named vector of thresholds}
+#'\item{threshold_search}{threshold-search method, either \code{"MCMC"} or \code{"grid"}}
+#'\item{grid_points}{number of searched grid points when \code{grid_search = TRUE}}
+#'\item{grid_search_type}{grid-search type when \code{grid_search = TRUE}}
+#'\item{grid_search_iter}{number of coordinate-refinement cycles when \code{grid_search = TRUE}}
 #'
 #'@examples
 #'data(d1)
@@ -100,6 +116,11 @@
 #'#Model1_1 <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1, 
 #'#iterations = 1000)
 #'#print(Model1_1)
+#'
+#'## deterministic grid search
+#'#Model1_grid <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1,
+#'#grid_search = TRUE, grids = 100)
+#'#print(Model1_grid)
 #'
 #'\donttest{
 #'### Examples elapsed time > 15s
@@ -133,10 +154,13 @@
 #'@export
 DPTS <- function(formula = NULL,formula_cv = NULL,data,index=NULL,Th = 1,q,timeFE = FALSE,
                  NoY = FALSE,y1 = NULL,iterations = 2000,sro = 0.1,
-                 r0x = NULL,r1x = NULL,...){
+                 r0x = NULL,r1x = NULL,grid_search = FALSE,grids = 100,
+                 grid_search_type = c("jointly","sequential"),grid_search_iter = 1,...){
   
-  model_dy <- DPTM$new(data = data, index = index,Th = Th, iterations = iterations,
-                       sro = sro,...)
+  grid_search_type <- match.arg(grid_search_type)
+  dots <- list(...)
+  mcmc_dots <- dots
+  mcmc_dots[c("w","var_u","iterlim","restart","delty0","MDE")] <- NULL
   
   model_linear <- DPML0(formula = formula,formula_cv = formula_cv,data = data,
                         index = index,timeFE = timeFE,y1 = y1,...)
@@ -144,17 +168,54 @@ DPTS <- function(formula = NULL,formula_cv = NULL,data,index=NULL,Th = 1,q,timeF
   if(isTRUE(NoY) & is.null(formula)){
     return(model_linear)
   }else{
+    
+    if(isTRUE(grid_search) && identical(grid_search_type,"sequential") && Th > 1){
+      search_results <- list()
+      fixed_thresholds <- NULL
+      m0 <- model_linear
+      
+      for (th_i in seq_len(Th)) {
+        model_step <- DPTM$new(data = data,index = index,Th = th_i,
+                               iterations = iterations,sro = sro,...)
+        model_step$.__enclos_env__$private$ssemin0 <- m0$NNLL
+        model_step$capture_input(formula = formula,formula_cv = formula_cv,
+                                 timeFE = timeFE,y1 = y1,q = q,
+                                 r0x = r0x,r1x = r1x,NoY = NoY)
+        model_step$grid_search_threshold(grids = grids,
+                                         grid_search_type = "sequential",
+                                         fixed_thresholds = fixed_thresholds,
+                                         grid_search_iter = 0)
+        search_results[[paste0("Step_",th_i)]] <- model_step$grid_results
+        fixed_thresholds <- model_step$thresholds
+        m0 <- model_step
+      }
+      
+      m0$grid_points <- sum(vapply(search_results,nrow,integer(1)))
+      m0$grid_search_type <- grid_search_type
+      m0$grid_search_iter <- 0
+      m0$grid_results <- search_results
+      m0$grid_refine_thresholds(grids = grids,
+                                grid_search_iter = grid_search_iter)
+      return(m0)
+    }
+    
+    model_dy <- DPTM$new(data = data, index = index,Th = Th, iterations = iterations,
+                         sro = sro,...)
     model_dy$.__enclos_env__$private$ssemin0 <- model_linear$NNLL
     
     #capture input &initx
     model_dy$capture_input(formula = formula,formula_cv = formula_cv,timeFE = timeFE
                            ,y1 = y1,q=q,r0x = r0x,r1x = r1x,NoY = NoY)
     
-    #Search thresholds
-    model_dy$MCMC_process(...)
-    
-    #MLE
-    model_dy$TModel_fit(model_dy$thresholds)
+    #Search thresholds and fit the threshold model
+    if(isTRUE(grid_search)){
+      model_dy$grid_search_threshold(grids = grids,
+                                     grid_search_type = grid_search_type,
+                                     grid_search_iter = grid_search_iter)
+    }else{
+      do.call(model_dy$MCMC_process,mcmc_dots)
+      model_dy$TModel_fit(model_dy$thresholds)
+    }
     
     return(model_dy)
   }

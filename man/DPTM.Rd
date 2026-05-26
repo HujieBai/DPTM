@@ -7,7 +7,7 @@
 [R6::R6Class] object.
 }
 \description{
-Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
+Use a MCMC-MLE or grid-search-MLE based two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
 }
 \keyword{internal}
 \section{Public fields}{
@@ -30,6 +30,16 @@ Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multipl
 \item{\code{Th}}{the number of thresholds}
 
 \item{\code{thresholds}}{a named vector of thresholds}
+
+\item{\code{threshold_search}}{threshold search method}
+
+\item{\code{grid_points}}{number of grid points used by deterministic threshold search}
+
+\item{\code{grid_search_type}}{deterministic grid-search type}
+
+\item{\code{grid_search_iter}}{coordinate-refinement iterations after deterministic grid search}
+
+\item{\code{grid_results}}{threshold candidates and objective values from grid search}
 }
 \if{html}{\out{</div>}}
 }
@@ -41,6 +51,8 @@ Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multipl
 \item \href{#method-DPTM-MLE}{\code{DPTM$MLE()}}
 \item \href{#method-DPTM-TModel_fit}{\code{DPTM$TModel_fit()}}
 \item \href{#method-DPTM-MCMC_process}{\code{DPTM$MCMC_process()}}
+\item \href{#method-DPTM-grid_search_threshold}{\code{DPTM$grid_search_threshold()}}
+\item \href{#method-DPTM-grid_refine_thresholds}{\code{DPTM$grid_refine_thresholds()}}
 \item \href{#method-DPTM-print}{\code{DPTM$print()}}
 \item \href{#method-DPTM-clone}{\code{DPTM$clone()}}
 }
@@ -61,7 +73,9 @@ initialize Initializing method
   var_u = NULL,
   iterlim = NULL,
   restart = FALSE,
-  delty0 = NULL
+  delty0 = NULL,
+  MDE = NULL,
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -87,6 +101,10 @@ initialize Initializing method
 \item{\code{restart}}{logicals. If MLE fails, set it as TRUE}
 
 \item{\code{delty0}}{a vector of dependent variable after difference}
+
+\item{\code{MDE}}{Minimum distance estimator.}
+
+\item{\code{...}}{optional arguments accepted by high-level wrappers}
 }
 \if{html}{\out{</div>}}
 }
@@ -192,6 +210,59 @@ Use MCMC to compute thresholds
 \item{\code{nCR}}{the parameter of MCMC, see BayesianTools::runMCMC}
 
 \item{\code{...}}{the settings of MCMC, see BayesianTools::applySettingsDefault}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DPTM-grid_search_threshold"></a>}}
+\if{latex}{\out{\hypertarget{method-DPTM-grid_search_threshold}{}}}
+\subsection{Method \code{grid_search_threshold()}}{
+Estimate unknown thresholds with a deterministic grid search
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DPTM$grid_search_threshold(
+  grids = 100,
+  grid_search_type = c("jointly", "sequential"),
+  fixed_thresholds = NULL,
+  grid_search_iter = 1
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{grids}}{number of threshold vectors to evaluate}
+
+\item{\code{grid_search_type}}{grid-search type: jointly or sequential}
+
+\item{\code{fixed_thresholds}}{previously selected thresholds used by sequential search}
+
+\item{\code{grid_search_iter}}{coordinate-refinement iterations after the initial grid search}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DPTM-grid_refine_thresholds"></a>}}
+\if{latex}{\out{\hypertarget{method-DPTM-grid_refine_thresholds}{}}}
+\subsection{Method \code{grid_refine_thresholds()}}{
+Refine threshold estimates by iteratively re-estimating one threshold at a time
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DPTM$grid_refine_thresholds(
+  grids = 100,
+  grid_search_iter = 1,
+  initial_thresholds = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{grids}}{number of grid points used for each conditional threshold search}
+
+\item{\code{grid_search_iter}}{number of coordinate-refinement cycles}
+
+\item{\code{initial_thresholds}}{starting thresholds; defaults to current estimates}
 }
 \if{html}{\out{</div>}}
 }

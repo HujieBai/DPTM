@@ -5,6 +5,8 @@
 \usage{
 DPTS(formula = NULL, formula_cv = NULL, data, index=NULL, Th = 1, q, timeFE = FALSE, 
 NoY = FALSE, y1 = NULL, iterations = 2000, sro = 0.1, r0x = NULL, r1x = NULL,
+grid_search = FALSE, grids = 100, grid_search_type = c("jointly", "sequential"),
+grid_search_iter = 1,
 ...)
 
 ## S6 method for class 'DPTM' 
@@ -37,6 +39,14 @@ NoY = FALSE, y1 = NULL, iterations = 2000, sro = 0.1, r0x = NULL, r1x = NULL,
 
 \item{r1x}{upper bound of threshold parameter space; If a setting is not provided, defaults (85\% quantile of threshold variable) will be used.}
 
+\item{grid_search}{logicals. If TRUE, thresholds are searched by deterministic grid search instead of MCMC. Defaults to `FALSE`.}
+
+\item{grids}{number of grid points (threshold vectors) searched when \code{grid_search = TRUE}. Defaults to `100`.}
+
+\item{grid_search_type}{type of grid search for multiple thresholds. \code{"jointly"} searches the full Cartesian grid (\code{grids^Th}); \code{"sequential"} adds thresholds one at a time (\code{grids * Th}). Defaults to \code{"jointly"}.}
+
+\item{grid_search_iter}{number of coordinate-refinement cycles after the initial grid search when \code{grid_search = TRUE}. For two thresholds, one cycle re-estimates the first threshold conditional on the second and then re-estimates the second conditional on the first. Set to \code{0} to skip this refinement. Defaults to \code{1}.}
+
 \item{...}{additional arguments to be passed to the settings of MCMC (see BayesianTools::applySettingsDefault)}
 }
 \value{
@@ -50,9 +60,13 @@ An object of class "DPTM" is a list containing at least the following components
 \item{covariance_matrix}{a covariance matrix}
 \item{Th}{the number of thresholds}
 \item{thresholds}{a named vector of thresholds}
+\item{threshold_search}{threshold-search method, either \code{"MCMC"} or \code{"grid"}}
+\item{grid_points}{number of searched grid points when \code{grid_search = TRUE}}
+\item{grid_search_type}{grid-search type when \code{grid_search = TRUE}}
+\item{grid_search_iter}{number of coordinate-refinement cycles when \code{grid_search = TRUE}}
 }
 \description{
-Use a MCMC-MLE based on two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
+Use a MCMC-MLE or grid-search-MLE based two-step procedure to estimate the dynamic panel multiple threshold model with fixed effects.
 }
 \details{
 \code{DPTS} can fit the dynamic panel threshold model with fixed effects proposed 
@@ -89,6 +103,13 @@ If user wants to use other MCMC, can use \code{...} (see BayesianTools::applySet
 As for the length of iterations, it can be set by \code{iterations} (50\% used for burnining) and default length is 2000.
 The trace plot and the Gelman and Rubin's convergence diagnostic are supplied by \code{DPTS} (\code{print}) to test the convergence of MCMC sample.
 
+Alternatively, set \code{grid_search = TRUE} to use deterministic grid search for the unknown thresholds.
+In that case, \code{grids} controls the number of threshold vectors evaluated; for example, \code{grids = 100} searches 100 candidate points in the ordered threshold-parameter space.
+For \code{Th > 1} and \code{grid_search_type = "jointly"}, the full Cartesian grid is searched, so \code{Th = 2} and \code{grids = 100} evaluates \code{100 * 100} candidate threshold pairs.
+For \code{grid_search_type = "sequential"}, thresholds are added one at a time, so \code{Th = 2} and \code{grids = 100} evaluates about \code{200} candidates in total.
+When \code{Th > 1}, \code{grid_search_iter} controls an additional coordinate-refinement step after the initial grid search. With two thresholds and \code{grid_search_iter = 1}, \code{DPTS} re-estimates the first threshold conditional on the second, then re-estimates the second conditional on the first, and sorts the final threshold estimates.
+Grid search does not produce MCMC threshold confidence intervals or Gelman-Rubin diagnostics.
+
 
 Additionally, we assume the exogenous regressor \eqn{x} is weakly exogenous, and 
 thus the first period after difference is given by
@@ -110,6 +131,11 @@ data(d1)
 #Model1_1 <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1, 
 #iterations = 1000)
 #print(Model1_1)
+
+## deterministic grid search
+#Model1_grid <- DPTS(y~x,data = d1, index = c('id','year'), q = d1$q, Th = 1,
+#grid_search = TRUE, grids = 100)
+#print(Model1_grid)
 
 \donttest{
 ### Examples elapsed time > 15s
